@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Databricks DEA Master Cheatsheet</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.55;background:#fff;color:#1a1a1a;padding:20px}
+h1{font-size:18px;font-weight:600;margin-bottom:3px}
+.subtitle{font-size:12px;color:#666;margin-bottom:14px}
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.nav-btn{padding:5px 14px;border-radius:20px;border:1.5px solid #ddd;background:#fff;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.nav-btn:hover{background:#f5f5f5}
+.nav-btn.active{border-color:var(--sc);background:var(--sb);color:var(--st)}
+.section{display:none}.section.active{display:block}
+
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:10px}
+.full{grid-column:1/-1}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+/* card */
+.card{background:#fafafa;border:0.5px solid #e5e5e5;border-radius:10px;padding:13px;border-left:3px solid var(--sc)}
+.card h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--st);margin-bottom:9px}
+.card>p{font-size:12.5px;color:#444;margin-bottom:8px;line-height:1.6}
+
+/* lists */
+ul.bullets{list-style:none;display:flex;flex-direction:column;gap:3px;margin-bottom:6px}
+ul.bullets li{font-size:12.5px;color:#333;padding-left:14px;position:relative}
+ul.bullets li::before{content:'›';position:absolute;left:0;color:var(--sc);font-weight:700}
+ul.bullets li strong{font-weight:600;color:#111}
+
+/* code inline */
+code{background:#efefef;border-radius:4px;padding:1px 5px;font-family:'SF Mono','Fira Code',monospace;font-size:11px;color:#c0392b}
+
+/* code block */
+.cb{background:#1e1e2e;color:#cdd6f4;border-radius:8px;padding:10px 13px;font-family:'SF Mono','Fira Code',monospace;font-size:11px;line-height:1.8;margin-top:7px;overflow-x:auto;white-space:pre}
+.kw{color:#cba6f7}.fn{color:#89b4fa}.str{color:#a6e3a1}.cm{color:#6c7086;font-style:italic}.num{color:#fab387}.op{color:#89dceb}
+
+/* badges */
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;margin-left:4px;vertical-align:middle}
+.hot{background:#fde8e8;color:#c0392b}.new{background:#e8f5e9;color:#27ae60}
+
+/* callouts */
+.warn{background:#fff8e1;border:0.5px solid #f9a825;border-radius:6px;padding:7px 10px;font-size:12px;margin-top:8px}
+.warn strong{color:#e65100}
+.info{background:#e8f0fe;border:0.5px solid #90b8f8;border-radius:6px;padding:7px 10px;font-size:12px;margin-top:8px}
+.info strong{color:#1a56c4}
+.ok{background:#e8f5e9;border:0.5px solid #81c784;border-radius:6px;padding:7px 10px;font-size:12px;margin-top:8px}
+.ok strong{color:#2e7d32}
+
+/* table */
+table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:7px}
+th{background:#f0f0f0;padding:5px 8px;text-align:left;font-weight:600;border:0.5px solid #ddd}
+td{padding:5px 8px;border:0.5px solid #ddd;vertical-align:top}
+tr:nth-child(even) td{background:#fafafa}
+
+/* medallion tiers */
+.tier{border-radius:8px;padding:11px;font-size:12px}
+.t-b{background:#fdf6ec;border:0.5px solid #e0c9a0}
+.t-s{background:#f0f4f8;border:0.5px solid #aac0cc}
+.t-g{background:#eef8f0;border:0.5px solid #9ccfaa}
+.tier-title{font-weight:700;font-size:13px;margin-bottom:6px}
+
+/* section colour tokens */
+.s1{--sc:#888780;--sb:#F1EFE8;--st:#444441}
+.s2{--sc:#0F6E56;--sb:#E1F5EE;--st:#085041}
+.s3{--sc:#534AB7;--sb:#EEEDFE;--st:#3C3489}
+.s4{--sc:#BA7517;--sb:#FAEEDA;--st:#633806}
+.s5{--sc:#993C1D;--sb:#FAECE7;--st:#712B13}
+
+.divider{border:none;border-top:0.5px solid #e5e5e5;margin:9px 0}
+@media print{body{padding:8px}.nav{display:none}.section{display:block!important}.section+.section{page-break-before:always}}
+</style>
+</head>
+<body>
+
+<h1>Databricks Certified Data Engineer Associate 2026 — Master Cheatsheet</h1>
+<div class="subtitle">Nov 2025 syllabus · 45 questions · 90 min · ~80% passing · $200 · all 5 domains covered</div>
+
+<div class="nav">
+  <button class="nav-btn s1 active" onclick="show('s1',this)">1 · Platform 10%</button>
+  <button class="nav-btn s2" onclick="show('s2',this)">2 · Ingestion 30%</button>
+  <button class="nav-btn s3" onclick="show('s3',this)">3 · Processing 31%</button>
+  <button class="nav-btn s4" onclick="show('s4',this)">4 · Production 18%</button>
+  <button class="nav-btn s5" onclick="show('s5',this)">5 · Governance 11%</button>
+</div>
+
+<!-- ============================= SECTION 1 ============================= -->
+<div id="s1" class="section s1 active">
+<div class="grid">
+
+<div class="card full">
+  <h3>Architecture — control plane vs data plane</h3>
+  <p>Databricks splits responsibilities between two planes. The <strong>control plane</strong> is fully managed by Databricks and hosts everything the user interacts with — the web UI, REST API, job scheduler, cluster manager, and Unity Catalog metastore. The <strong>data plane</strong> lives inside the customer's cloud account and is where computation actually happens — driver nodes, worker nodes, DBFS, and external data sources. Critically, customer data never leaves the data plane.</p>
+  <div class="two">
+    <table>
+      <tr><th>Component</th><th>Plane</th><th>Managed by</th></tr>
+      <tr><td>Web application / UI</td><td>Control</td><td>Databricks</td></tr>
+      <tr><td>REST API / CLI</td><td>Control</td><td>Databricks</td></tr>
+      <tr><td>Job scheduler</td><td>Control</td><td>Databricks</td></tr>
+      <tr><td>Cluster manager</td><td>Control</td><td>Databricks</td></tr>
+      <tr><td>UC metastore</td><td>Control</td><td>Databricks</td></tr>
+      <tr><td>Driver node</td><td>Data</td><td>Customer cloud</td></tr>
+      <tr><td>Worker nodes</td><td>Data</td><td>Customer cloud</td></tr>
+      <tr><td>DBFS root</td><td>Data</td><td>Customer cloud</td></tr>
+      <tr><td>JDBC data sources</td><td>Data</td><td>Customer cloud</td></tr>
+    </table>
+    <div>
+      <ul class="bullets">
+        <li><strong>Driver node</strong> — orchestrates Spark tasks; hosts SparkContext; runs driver program</li>
+        <li><strong>Worker nodes</strong> — execute tasks assigned by driver; hold executor JVMs</li>
+        <li><strong>Executors</strong> — JVM processes on workers; hold partition data and run tasks</li>
+        <li><strong>Serverless shift</strong> — in serverless mode, Databricks manages compute in their cloud account, shifting the data plane boundary</li>
+        <li><strong>Secure cluster connectivity</strong> — outbound-only; no open inbound ports required in customer VNet/VPC</li>
+      </ul>
+      <div class="warn"><strong>Exam trap:</strong> The web application is control plane. The driver node is data plane. These two are the most common distractors — don't swap them.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Compute types <span class="badge hot">exam favourite</span></h3>
+  <p>Choosing the right compute type is a recurring exam scenario. Each type is optimised for a specific use case with different startup characteristics, cost models, and configuration options.</p>
+  <table>
+    <tr><th>Type</th><th>Best for</th><th>Startup</th><th>Cost model</th><th>Key trait</th></tr>
+    <tr><td>All-purpose cluster</td><td>Interactive notebooks, dev, ad-hoc</td><td>2–5 min</td><td>DBU while running (including idle)</td><td>Manually started/stopped; shared across users</td></tr>
+    <tr><td>Job cluster</td><td>Automated scheduled jobs</td><td>2–5 min</td><td>DBU only during job execution</td><td>Spins up for job; terminates after completion</td></tr>
+    <tr><td>SQL Warehouse (Classic)</td><td>SQL analytics, BI dashboards</td><td>~1 min</td><td>DBU; auto-suspends after idle</td><td>SQL-only; size XS → 4XL; auto-suspend</td></tr>
+    <tr><td>SQL Warehouse (Serverless)</td><td>BI with instant start</td><td>Seconds</td><td>DBU; scales to zero</td><td>No cluster config needed; fastest startup</td></tr>
+    <tr><td>Serverless Jobs/Pipelines</td><td>ETL jobs, Lakeflow pipelines</td><td>Seconds</td><td>DBU; scales to zero</td><td>Managed infra; no cluster config</td></tr>
+    <tr><td>Cluster pool</td><td>Reduce job startup latency</td><td>Seconds (from pool)</td><td>DBU for idle instances</td><td>Pre-warms VMs; lends to job clusters</td></tr>
+    <tr><td>Single-node</td><td>Small data, pandas, single-machine ML</td><td>2–3 min</td><td>DBU (driver only)</td><td>No workers; driver handles everything</td></tr>
+  </table>
+  <div class="warn"><strong>Cluster pool detail:</strong> A pool holds pre-warmed VM instances but does NOT execute code. When a job starts, it grabs a VM from the pool — skipping the cloud provisioning wait (saves 2–4 minutes). Idle pool VMs still incur DBU cost.</div>
+</div>
+
+<div class="card full">
+  <h3>Query performance optimisation <span class="badge hot">high frequency</span></h3>
+  <p>Delta Lake provides multiple layers of performance optimisation. Each technique targets a specific bottleneck — file size, co-location, or point-lookup speed. Understanding when and how to apply each is heavily tested.</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm">-- Compact small files into larger ones</span>
+<span class="kw">OPTIMIZE</span> catalog.schema.my_table;
+
+<span class="cm">-- Compact + co-locate data on filter columns</span>
+<span class="kw">OPTIMIZE</span> my_table <span class="kw">ZORDER BY</span> (country, event_date);
+
+<span class="cm">-- Liquid Clustering: modern replacement for Z-order</span>
+<span class="cm">-- On new table:</span>
+<span class="kw">CREATE TABLE</span> events (id <span class="kw">STRING</span>, country <span class="kw">STRING</span>, dt <span class="kw">DATE</span>)
+  <span class="kw">CLUSTER BY</span> (country, dt);
+
+<span class="cm">-- On existing table:</span>
+<span class="kw">ALTER TABLE</span> events <span class="kw">CLUSTER BY</span> (country, dt);
+
+<span class="cm">-- Remove old data files permanently (default: 7 days)</span>
+<span class="kw">VACUUM</span> my_table;
+<span class="kw">VACUUM</span> my_table <span class="kw">RETAIN</span> <span class="num">168</span> HOURS;
+<span class="kw">VACUUM</span> my_table <span class="kw">RETAIN</span> <span class="num">0</span> HOURS DRY RUN; <span class="cm">-- preview only</span>
+
+<span class="cm">-- Bloom filter index for fast point lookups</span>
+<span class="kw">CREATE BLOOMFILTER INDEX ON TABLE</span> events
+  <span class="kw">FOR COLUMNS</span>(user_id <span class="kw">OPTIONS</span> (fpp=<span class="num">0.1</span>));
+
+<span class="cm">-- Cache table in executor memory</span>
+<span class="kw">CACHE TABLE</span> my_table;
+<span class="kw">UNCACHE TABLE</span> my_table;
+
+<span class="cm">-- Update column statistics for query planning</span>
+<span class="kw">ANALYZE TABLE</span> my_table <span class="kw">COMPUTE STATISTICS</span>
+  <span class="kw">FOR COLUMNS</span> country, event_date;
+
+<span class="cm">-- AQE config (auto-enabled DBR 7.3+)</span>
+spark.conf.<span class="fn">set</span>(<span class="str">"spark.sql.adaptive.enabled"</span>, <span class="str">"true"</span>)
+spark.conf.<span class="fn">set</span>(<span class="str">"spark.sql.adaptive.skewJoin.enabled"</span>, <span class="str">"true"</span>)
+
+<span class="cm">-- Broadcast join threshold (default 10MB)</span>
+spark.conf.<span class="fn">set</span>(<span class="str">"spark.sql.autoBroadcastJoinThreshold"</span>, <span class="str">"100m"</span>)</div>
+    </div>
+    <div>
+      <table>
+        <tr><th>Technique</th><th>How it works</th><th>When to use</th></tr>
+        <tr><td><strong>Liquid Clustering</strong></td><td>Dynamically re-clusters data; auto-adapts to query patterns; multi-column</td><td>Modern tables; high-cardinality or frequently changing filter cols; replaces static partitions</td></tr>
+        <tr><td><strong>Z-ordering</strong></td><td>Co-locates related rows in same Parquet files; multi-dimensional locality</td><td>Low-to-medium cardinality cols in filters; must run inside OPTIMIZE</td></tr>
+        <tr><td><strong>OPTIMIZE</strong></td><td>Merges many small files into fewer large ones; triggers Z-order or clustering</td><td>After many small writes — streaming ingest, frequent inserts</td></tr>
+        <tr><td><strong>VACUUM</strong></td><td>Permanently deletes data files older than retention threshold</td><td>Regular maintenance; storage cost control</td></tr>
+        <tr><td><strong>Bloom filter</strong></td><td>Probabilistic per-column index; skips files unlikely to contain value</td><td>Point lookups on high-cardinality strings (user_id, email)</td></tr>
+        <tr><td><strong>Data skipping</strong></td><td>Delta stores min/max stats per file; skips irrelevant files on filter</td><td>Automatic — stays effective when files are well-optimised</td></tr>
+        <tr><td><strong>Broadcast join</strong></td><td>Broadcasts small table to all executors; eliminates shuffle entirely</td><td>One side &lt;200MB (tunable); avoids expensive SortMergeJoin</td></tr>
+        <tr><td><strong>AQE (Adaptive Query Execution)</strong></td><td>Re-optimises query plan at runtime using actual partition stats</td><td>Auto-enabled; handles skew joins and dynamic partition coalescing</td></tr>
+        <tr><td><strong>Photon</strong></td><td>Vectorised native C++ execution engine replaces JVM row-by-row eval</td><td>Auto on serverless SQL warehouses; enable via cluster config otherwise</td></tr>
+      </table>
+      <div class="warn"><strong>OPTIMIZE vs VACUUM:</strong> OPTIMIZE compacts files but does NOT delete old ones — history is preserved. VACUUM permanently deletes files older than the retention period — time travel past that point becomes impossible.</div>
+      <div class="info"><strong>Liquid Clustering vs Z-order:</strong> Liquid Clustering is the modern recommendation. It handles multi-column clustering incrementally without a full OPTIMIZE run. Z-order still works but Liquid Clustering is preferred for new tables.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Spark internals</h3>
+  <p>Understanding Spark's execution model helps interpret Spark UI output and answer optimisation questions.</p>
+  <ul class="bullets">
+    <li><strong>SparkSession</strong> — unified entry point for DataFrame and SQL APIs</li>
+    <li><strong>DAG</strong> — directed acyclic graph of transformations; built lazily until an action fires</li>
+    <li><strong>Job</strong> — triggered by an action (collect, write, show, count)</li>
+    <li><strong>Stage</strong> — set of tasks between shuffle boundaries; stages run sequentially</li>
+    <li><strong>Task</strong> — one unit of work on one partition on one executor</li>
+    <li><strong>Partition</strong> — chunk of data (~128MB default); one task processes one partition</li>
+    <li><strong>Shuffle</strong> — redistribute data across executors between stages; most expensive operation</li>
+    <li><strong>Catalyst optimizer</strong> — rewrites logical plan into an optimised physical plan</li>
+    <li><strong>Lazy evaluation</strong> — transformations (filter, select, join) do nothing until an action is called</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>Lakehouse platform value</h3>
+  <ul class="bullets">
+    <li><strong>Delta Lake</strong> provides: ACID transactions, time travel, schema enforcement, Change Data Feed, unified batch + streaming</li>
+    <li><strong>Unity Catalog</strong> provides: fine-grained access control, column lineage, auditing, Delta Sharing, Lakehouse Federation</li>
+    <li><strong>Lakeflow family:</strong> Lakeflow Connect (ingest) → Lakeflow Declarative Pipelines (transform) → Lakeflow Jobs (orchestrate)</li>
+    <li><strong>Open format</strong> — Parquet + Delta log = no vendor lock-in; readable by Spark, Trino, Athena, and more</li>
+    <li><strong>Single platform</strong> — SQL, Python, Scala, R, ML, and streaming in one place</li>
+  </ul>
+  <div class="warn"><strong>Exam trap:</strong> "Real-time notebook collaboration" is a workspace feature. "Support for both batch and streaming workloads" is a Delta Lake benefit. Don't mix these up.</div>
+</div>
+
+<div class="card">
+  <h3>Databricks Runtime (DBR)</h3>
+  <ul class="bullets">
+    <li><strong>Standard DBR</strong> — Spark + Python/Scala/R + Delta Lake; the baseline</li>
+    <li><strong>ML Runtime</strong> — adds MLflow, scikit-learn, TensorFlow, PyTorch pre-installed</li>
+    <li><strong>Photon Runtime</strong> — adds vectorised C++ engine on top of standard DBR</li>
+    <li><strong>LTS (Long-Term Support)</strong> — supported 2+ years; use for stable production workloads</li>
+    <li>Databricks Connect requires DBR 13.0+ on the remote cluster</li>
+    <li>Cluster policies can enforce a specific DBR version across a team</li>
+  </ul>
+</div>
+
+</div>
+</div>
+
+<!-- ============================= SECTION 2 ============================= -->
+<div id="s2" class="section s2">
+<div class="grid">
+
+<div class="card full">
+  <h3>Auto Loader <span class="badge hot">high frequency</span></h3>
+  <p>Auto Loader is the recommended way to continuously ingest new files from cloud storage into Delta Lake. It uses the <code>cloudFiles</code> format and supports two detection modes: <strong>directory listing</strong> (default — polls the folder periodically) and <strong>file notification</strong> (event-driven via SNS/SQS on AWS or Event Grid on Azure — more scalable for millions of files). Auto Loader guarantees exactly-once processing via checkpointing and handles schema evolution automatically.</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm"># Complete Auto Loader read + write</span>
+df = (spark.readStream
+  .<span class="fn">format</span>(<span class="str">"cloudFiles"</span>)
+
+  <span class="cm"># required</span>
+  .<span class="fn">option</span>(<span class="str">"cloudFiles.format"</span>, <span class="str">"json"</span>)
+  .<span class="fn">option</span>(<span class="str">"cloudFiles.schemaLocation"</span>, <span class="str">"/chk/schema"</span>)
+
+  <span class="cm"># schema evolution</span>
+  .<span class="fn">option</span>(<span class="str">"mergeSchema"</span>, <span class="str">"true"</span>)
+  .<span class="fn">option</span>(<span class="str">"cloudFiles.schemaEvolutionMode"</span>, <span class="str">"addNewColumns"</span>)
+  .<span class="fn">option</span>(<span class="str">"rescuedDataColumn"</span>, <span class="str">"_rescued"</span>)
+
+  <span class="cm"># performance throttling</span>
+  .<span class="fn">option</span>(<span class="str">"cloudFiles.maxFilesPerTrigger"</span>, <span class="num">1000</span>)
+  .<span class="fn">option</span>(<span class="str">"cloudFiles.maxBytesPerTrigger"</span>, <span class="str">"10g"</span>)
+
+  <span class="cm"># file notification mode (high volume)</span>
+  .<span class="fn">option</span>(<span class="str">"cloudFiles.useNotifications"</span>, <span class="str">"true"</span>)
+
+  .<span class="fn">load</span>(<span class="str">"/landing/events/"</span>)
+)
+
+(df.writeStream
+  .<span class="fn">option</span>(<span class="str">"checkpointLocation"</span>, <span class="str">"/chk/events"</span>)
+  .<span class="fn">trigger</span>(availableNow=<span class="op">True</span>)       <span class="cm"># batch-like; preferred</span>
+  <span class="cm"># .trigger(processingTime='5 minutes')</span>
+  <span class="cm"># .trigger(once=True)  # deprecated</span>
+  .<span class="fn">outputMode</span>(<span class="str">"append"</span>)
+  .<span class="fn">option</span>(<span class="str">"mergeSchema"</span>, <span class="str">"true"</span>)
+  .<span class="fn">table</span>(<span class="str">"catalog.bronze.events"</span>)
+)</div>
+    </div>
+    <div>
+      <table>
+        <tr><th>Option</th><th>Values / notes</th></tr>
+        <tr><td><code>cloudFiles.format</code></td><td>json, csv, parquet, avro, orc, text, binaryFile, delta</td></tr>
+        <tr><td><code>cloudFiles.schemaLocation</code></td><td>Cloud path to persist inferred schema; required for schema inference to survive restarts</td></tr>
+        <tr><td><code>mergeSchema</code></td><td>true = add new cols on schema change; false = strict enforcement (default)</td></tr>
+        <tr><td><code>cloudFiles.schemaEvolutionMode</code></td><td>addNewColumns (default), rescue, failOnNewColumns, none</td></tr>
+        <tr><td><code>cloudFiles.useNotifications</code></td><td>true = event-driven (requires cloud setup); false = directory listing poll</td></tr>
+        <tr><td><code>cloudFiles.maxFilesPerTrigger</code></td><td>Limit files per micro-batch; prevents overload during catch-up</td></tr>
+        <tr><td><code>rescuedDataColumn</code></td><td>Column to capture malformed / extra fields that don't fit schema</td></tr>
+        <tr><td><code>cloudFiles.includeExistingFiles</code></td><td>true = also process files already present; false = new files only</td></tr>
+      </table>
+      <div class="warn"><strong>Exam trap:</strong> Without <code>schemaLocation</code>, schema is re-inferred from the first file on every restart — this breaks on schema drift. Always set it.</div>
+      <div class="info"><strong>Valid sources:</strong> Amazon S3, Azure Data Lake Storage Gen2, Google Cloud Storage. NOT valid for Auto Loader: local filesystem, JDBC, Kafka (use Spark Structured Streaming directly for those).</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Auto Loader vs COPY INTO</h3>
+  <p>Both tools ingest files idempotently, but they target different scenarios. Auto Loader is a streaming API for continuous high-volume ingestion. COPY INTO is a SQL command for ad-hoc or one-time batch loads.</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm">-- COPY INTO: idempotent SQL batch load</span>
+<span class="kw">COPY INTO</span> catalog.bronze.raw_events
+<span class="kw">FROM</span> (
+  <span class="kw">SELECT</span>
+    _metadata.file_name        <span class="kw">AS</span> source_file,
+    _metadata.file_modification_time <span class="kw">AS</span> ingest_time,
+    *
+  <span class="kw">FROM</span> <span class="str">'/landing/events/'</span>
+)
+<span class="kw">FILEFORMAT</span> = JSON
+<span class="kw">FORMAT_OPTIONS</span> (
+  <span class="str">'multiLine'</span>          = <span class="str">'true'</span>,
+  <span class="str">'ignoreCorruptFiles'</span> = <span class="str">'true'</span>
+)
+<span class="kw">COPY_OPTIONS</span> (
+  <span class="str">'mergeSchema'</span> = <span class="str">'true'</span>,
+  <span class="str">'force'</span>       = <span class="str">'false'</span>  <span class="cm">-- false=idempotent; true=reload all</span>
+);</div>
+    </div>
+    <div>
+      <table>
+        <tr><th></th><th>Auto Loader</th><th>COPY INTO</th></tr>
+        <tr><td>API</td><td>Python / Scala streaming</td><td>SQL command</td></tr>
+        <tr><td>Mode</td><td>Streaming micro-batch</td><td>Batch (SQL)</td></tr>
+        <tr><td>Scale</td><td>Billions of files</td><td>Thousands of files</td></tr>
+        <tr><td>Schema</td><td>Auto-infer + evolve</td><td>Manual or inherit target</td></tr>
+        <tr><td>Idempotency</td><td>Via checkpoint file</td><td>Tracks loaded files</td></tr>
+        <tr><td>Reprocess all</td><td>Delete checkpoint dir</td><td>Set <code>force=true</code></td></tr>
+        <tr><td>Best for</td><td>Continuous file landing</td><td>Ad-hoc / one-time loads</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Structured Streaming</h3>
+  <p>Structured Streaming treats an incoming data stream as an unbounded table. You write the same DataFrame transformations you would for batch, and Spark handles the incremental execution. Checkpointing ensures exactly-once semantics and fault tolerance.</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm"># Read from Delta table as stream</span>
+stream_df = (spark.readStream
+  .<span class="fn">format</span>(<span class="str">"delta"</span>)
+  .<span class="fn">option</span>(<span class="str">"maxFilesPerTrigger"</span>, <span class="num">10</span>)
+  .<span class="fn">table</span>(<span class="str">"bronze.events"</span>)
+)
+
+<span class="cm"># Watermark + windowed aggregation</span>
+windowed = (stream_df
+  .<span class="fn">withWatermark</span>(<span class="str">"event_time"</span>, <span class="str">"10 minutes"</span>)
+  .<span class="fn">groupBy</span>(
+    <span class="fn">window</span>(col(<span class="str">"event_time"</span>), <span class="str">"5 minutes"</span>),
+    col(<span class="str">"country"</span>)
+  )
+  .<span class="fn">agg</span>(<span class="fn">count</span>(<span class="str">"*"</span>).<span class="fn">alias</span>(<span class="str">"events"</span>))
+)
+
+<span class="cm"># foreachBatch: custom write logic per micro-batch</span>
+<span class="kw">def</span> <span class="fn">process_batch</span>(batch_df, batch_id):
+  batch_df.<span class="fn">write</span>.<span class="fn">mode</span>(<span class="str">"append"</span>).<span class="fn">saveAsTable</span>(<span class="str">"silver.events"</span>)
+
+(stream_df.writeStream
+  .<span class="fn">foreachBatch</span>(process_batch)
+  .<span class="fn">option</span>(<span class="str">"checkpointLocation"</span>, <span class="str">"/chk"</span>)
+  .<span class="fn">trigger</span>(availableNow=<span class="op">True</span>)
+  .<span class="fn">start</span>()
+)</div>
+    </div>
+    <div>
+      <table>
+        <tr><th>Output mode</th><th>What is written</th><th>Use when</th></tr>
+        <tr><td><code>append</code></td><td>Only new rows added since last trigger</td><td>No aggregation, or watermarked aggregation</td></tr>
+        <tr><td><code>complete</code></td><td>Full result table every trigger</td><td>Aggregations without watermark</td></tr>
+        <tr><td><code>update</code></td><td>Only rows that changed since last trigger</td><td>Aggregations with watermark</td></tr>
+      </table>
+      <table style="margin-top:8px">
+        <tr><th>Trigger mode</th><th>Behaviour</th></tr>
+        <tr><td><code>availableNow=True</code></td><td>Process all pending data then stop; preferred over <code>once</code></td></tr>
+        <tr><td><code>processingTime='5 min'</code></td><td>Micro-batch every N minutes</td></tr>
+        <tr><td><code>continuous='1 second'</code></td><td>Low-latency continuous (experimental)</td></tr>
+        <tr><td>Default (no trigger)</td><td>Process as fast as possible</td></tr>
+      </table>
+      <div class="info"><strong>foreachBatch</strong> gives you a regular DataFrame per micro-batch — lets you write to multiple targets, apply MERGE, or use non-streaming sinks. Use it when the streaming writer alone isn't flexible enough.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Notebooks and dbutils</h3>
+  <p>Notebooks support multiple languages per cell via magic commands. <code>%run</code> and <code>dbutils.notebook.run()</code> both execute another notebook, but behave differently — a critical distinction the exam tests regularly.</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm"># Magic commands (per-cell language switch)</span>
+<span class="op">%sql</span>   SELECT * FROM my_table LIMIT 10
+<span class="op">%python</span> print("hello")
+<span class="op">%scala</span> val x = 1
+<span class="op">%r</span>     summary(df)
+<span class="op">%sh</span>    ls -la /tmp
+<span class="op">%fs</span>    ls /mnt/data
+<span class="op">%md</span>    ## Documentation cell
+<span class="op">%pip</span> install pandas==2.0.0 requests
+
+<span class="cm"># %run: inline execution; SHARES caller scope</span>
+<span class="op">%run</span> ./utils/helpers
+<span class="op">%run</span> /Repos/project/utils/helpers
+
+<span class="cm"># dbutils.notebook.run: ISOLATED scope; returns string</span>
+result = dbutils.notebook.<span class="fn">run</span>(
+  <span class="str">"/path/to/notebook"</span>,
+  timeout_seconds=<span class="num">300</span>,
+  arguments={<span class="str">"env"</span>: <span class="str">"prod"</span>, <span class="str">"date"</span>: <span class="str">"2024-01-01"</span>}
+)
+dbutils.notebook.<span class="fn">exit</span>(<span class="str">"done"</span>)  <span class="cm"># return value to caller</span>
+
+<span class="cm"># Widgets</span>
+dbutils.widgets.<span class="fn">text</span>(<span class="str">"date"</span>, <span class="str">"2024-01-01"</span>, <span class="str">"Run date"</span>)
+dbutils.widgets.<span class="fn">dropdown</span>(<span class="str">"env"</span>, <span class="str">"dev"</span>, [<span class="str">"dev"</span>,<span class="str">"prod"</span>])
+dbutils.widgets.<span class="fn">multiselect</span>(<span class="str">"cols"</span>, <span class="str">"id"</span>, [<span class="str">"id"</span>,<span class="str">"name"</span>,<span class="str">"date"</span>])
+val = dbutils.widgets.<span class="fn">get</span>(<span class="str">"date"</span>)
+dbutils.widgets.<span class="fn">removeAll</span>()</div>
+    </div>
+    <div>
+      <div class="cb"><span class="cm"># File system</span>
+dbutils.fs.<span class="fn">ls</span>(<span class="str">"/mnt/data"</span>)
+dbutils.fs.<span class="fn">cp</span>(<span class="str">"/src/file"</span>, <span class="str">"/dst/file"</span>)
+dbutils.fs.<span class="fn">mv</span>(<span class="str">"/src"</span>, <span class="str">"/dst"</span>)
+dbutils.fs.<span class="fn">rm</span>(<span class="str">"/path"</span>, recurse=<span class="op">True</span>)
+dbutils.fs.<span class="fn">mkdirs</span>(<span class="str">"/new/path"</span>)
+dbutils.fs.<span class="fn">head</span>(<span class="str">"/path/file.txt"</span>, <span class="num">1000</span>)  <span class="cm"># first N bytes</span>
+
+<span class="cm"># Secrets (output always REDACTED)</span>
+pw = dbutils.secrets.<span class="fn">get</span>(scope=<span class="str">"my-scope"</span>, key=<span class="str">"db-pass"</span>)
+dbutils.secrets.<span class="fn">listScopes</span>()
+dbutils.secrets.<span class="fn">list</span>(<span class="str">"my-scope"</span>)
+
+<span class="cm"># Debugging tools</span>
+df.<span class="fn">printSchema</span>()          <span class="cm"># column names + types</span>
+df.<span class="fn">explain</span>()              <span class="cm"># physical plan</span>
+df.<span class="fn">explain</span>(<span class="str">"extended"</span>)   <span class="cm"># logical + physical</span>
+df.<span class="fn">explain</span>(<span class="str">"formatted"</span>)  <span class="cm"># readable tree</span>
+<span class="fn">display</span>(df)               <span class="cm"># render as interactive table</span>
+df.rdd.<span class="fn">getNumPartitions</span>() <span class="cm"># current partition count</span></div>
+      <div class="info"><strong>%run vs dbutils.notebook.run():</strong> <code>%run</code> is like an include — all variables and imports are shared with the calling notebook. <code>dbutils.notebook.run()</code> executes the notebook as a separate isolated job and returns only the exit value string. Use <code>run()</code> when you need parallelism or isolation.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Databricks Connect <span class="badge new">new topic</span></h3>
+  <p>Databricks Connect lets you run Spark code from a local IDE (VS Code, IntelliJ, PyCharm) against a remote Databricks cluster. Execution happens on the cluster; results return to your local machine. Ideal for local development and CI/CD pipelines.</p>
+  <div class="cb"><span class="cm"># Install locally (match cluster DBR version)</span>
+pip install databricks-connect==14.3.*
+
+<span class="cm"># Configure</span>
+<span class="cm"># Set env vars: DATABRICKS_HOST, DATABRICKS_TOKEN, DATABRICKS_CLUSTER_ID</span>
+
+<span class="kw">from</span> databricks.connect <span class="kw">import</span> DatabricksSession
+spark = DatabricksSession.<span class="fn">builder</span>.<span class="fn">getOrCreate</span>()
+df = spark.<span class="fn">read</span>.<span class="fn">table</span>(<span class="str">"catalog.schema.events"</span>)
+df.<span class="fn">filter</span>(col(<span class="str">"country"</span>) == <span class="str">"US"</span>).<span class="fn">show</span>()</div>
+  <ul class="bullets" style="margin-top:8px">
+    <li>Requires DBR 13.0+ on the remote cluster</li>
+    <li><strong>NOT supported:</strong> <code>dbutils.fs</code>, most dbutils methods, SparkContext directly</li>
+    <li><strong>Supported:</strong> DataFrame API, Spark SQL, Delta Lake, UDFs</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>Change Data Feed (CDF)</h3>
+  <p>CDF tracks row-level changes (inserts, updates, deletes) in a Delta table, making it easy to propagate changes downstream — ideal for the Silver → Gold CDC pattern.</p>
+  <div class="cb"><span class="cm">-- Enable CDF</span>
+<span class="kw">ALTER TABLE</span> my_table
+  <span class="kw">SET TBLPROPERTIES</span> (<span class="str">'delta.enableChangeDataFeed'</span>=<span class="str">'true'</span>);
+
+<span class="cm">-- Read changes between versions 1 and 5</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> table_changes(<span class="str">'my_table'</span>, <span class="num">1</span>, <span class="num">5</span>);
+<span class="cm">-- extra cols: _change_type, _commit_version, _commit_timestamp</span>
+<span class="cm">-- _change_type values:</span>
+<span class="cm">--   insert | delete | update_preimage | update_postimage</span>
+
+<span class="cm"># Read CDF as stream</span>
+spark.readStream
+  .<span class="fn">option</span>(<span class="str">"readChangeFeed"</span>, <span class="str">"true"</span>)
+  .<span class="fn">option</span>(<span class="str">"startingVersion"</span>, <span class="num">0</span>)
+  .<span class="fn">table</span>(<span class="str">"my_table"</span>)</div>
+</div>
+
+<div class="card">
+  <h3>Lakeflow Connect <span class="badge new">new topic</span></h3>
+  <p>Lakeflow Connect provides managed, no-code/low-code ingestion from SaaS sources — complementing Auto Loader (which handles file-based sources) with structured connector-based ingestion.</p>
+  <ul class="bullets">
+    <li>Ingest from SaaS: Salesforce, ServiceNow, Google Analytics, and more</li>
+    <li>Handles schema mapping, incremental loads, and error handling automatically</li>
+    <li>Data lands in Delta tables in your lakehouse</li>
+    <li>Configured and managed via Workflows UI or API</li>
+    <li>Falls under the Development &amp; Ingestion exam domain</li>
+  </ul>
+</div>
+
+</div>
+</div>
+
+<!-- ============================= SECTION 3 ============================= -->
+<div id="s3" class="section s3">
+<div class="grid">
+
+<div class="card full">
+  <h3>Medallion architecture <span class="badge hot">high frequency</span></h3>
+  <p>The Medallion Architecture organises data into three progressively refined layers. Each layer has a specific purpose and the exam tests your ability to identify which layer a given operation belongs to, and what the correct compute/pattern is for each.</p>
+  <div class="three">
+    <div class="tier t-b">
+      <div class="tier-title" style="color:#8B5E3C">Bronze — raw ingestion</div>
+      <ul class="bullets">
+        <li>Exact copy of source; no transformation</li>
+        <li>Append-only; full history preserved</li>
+        <li>Ingest with Auto Loader or COPY INTO</li>
+        <li>Add metadata cols: ingest_time, source_file</li>
+        <li>Schema: flexible — use rescue column</li>
+        <li>Retain all data; never purge early</li>
+      </ul>
+    </div>
+    <div class="tier t-s">
+      <div class="tier-title" style="color:#3C5A8B">Silver — cleaned &amp; conformed</div>
+      <ul class="bullets">
+        <li>Filter nulls, remove duplicates</li>
+        <li>Enforce schema and data types</li>
+        <li>MERGE for CDC upserts</li>
+        <li>Join with dimension / lookup tables</li>
+        <li>Apply business rules and data quality</li>
+        <li>Enable CDF for Gold propagation</li>
+      </ul>
+    </div>
+    <div class="tier t-g">
+      <div class="tier-title" style="color:#2E6B45">Gold — aggregated &amp; curated</div>
+      <ul class="bullets">
+        <li>Business-level aggregations and KPIs</li>
+        <li>Optimised for BI and reporting</li>
+        <li>Wide denormalised tables</li>
+        <li>Use OPTIMIZE + Liquid Clustering</li>
+        <li>SQL Warehouse + Photon ideal here</li>
+        <li>Powers dashboards and ML features</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Lakeflow Declarative Pipelines (formerly Delta Live Tables) <span class="badge new">renamed</span> <span class="badge hot">high frequency</span></h3>
+  <p>Lakeflow Declarative Pipelines lets you declare Delta tables using SQL or Python — Databricks figures out execution order, manages retries, tracks data quality, and maintains lineage automatically. The <code>LIVE.</code> prefix references tables within the same pipeline.</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm">-- SQL: streaming live table (incremental ingest)</span>
+<span class="kw">CREATE OR REFRESH STREAMING LIVE TABLE</span> bronze_raw
+COMMENT <span class="str">"Raw events from landing zone"</span>
+TBLPROPERTIES (<span class="str">"quality"</span>=<span class="str">"bronze"</span>)
+<span class="kw">AS SELECT</span>
+  _metadata.file_name <span class="kw">AS</span> source_file,
+  current_timestamp() <span class="kw">AS</span> ingest_time, *
+<span class="kw">FROM</span> cloud_files(<span class="str">'/landing/'</span>, <span class="str">'json'</span>,
+  map(<span class="str">'cloudFiles.schemaLocation'</span>, <span class="str">'/chk/schema'</span>));
+
+<span class="cm">-- SQL: live table with data quality expectations</span>
+<span class="kw">CREATE OR REFRESH LIVE TABLE</span> silver_orders (
+  <span class="kw">CONSTRAINT</span> valid_amount
+    <span class="kw">EXPECT</span> (amount > <span class="num">0</span>) <span class="kw">ON VIOLATION DROP ROW</span>,
+  <span class="kw">CONSTRAINT</span> has_customer
+    <span class="kw">EXPECT</span> (customer_id <span class="kw">IS NOT NULL</span>)
+    <span class="kw">ON VIOLATION FAIL UPDATE</span>
+)
+<span class="kw">AS SELECT</span> order_id, customer_id, amount, order_date
+<span class="kw">FROM</span> LIVE.bronze_raw
+<span class="kw">WHERE</span> order_date >= <span class="str">'2024-01-01'</span>;
+
+<span class="cm">-- SQL: gold aggregation table</span>
+<span class="kw">CREATE OR REFRESH LIVE TABLE</span> gold_daily_revenue
+<span class="kw">AS SELECT</span>
+  order_date,
+  <span class="fn">SUM</span>(amount)               <span class="kw">AS</span> total_revenue,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> customer_id) <span class="kw">AS</span> unique_customers
+<span class="kw">FROM</span> LIVE.silver_orders
+<span class="kw">GROUP BY</span> order_date;</div>
+    </div>
+    <div>
+      <div class="cb"><span class="cm"># Python equivalent</span>
+<span class="kw">import</span> dlt
+<span class="kw">from</span> pyspark.sql.functions <span class="kw">import</span> *
+
+<span class="fn">@dlt.table</span>(comment=<span class="str">"Raw events"</span>,
+           table_properties={<span class="str">"quality"</span>:<span class="str">"bronze"</span>})
+<span class="kw">def</span> <span class="fn">bronze_raw</span>():
+  <span class="kw">return</span> (spark.readStream
+    .<span class="fn">format</span>(<span class="str">"cloudFiles"</span>)
+    .<span class="fn">option</span>(<span class="str">"cloudFiles.format"</span>, <span class="str">"json"</span>)
+    .<span class="fn">option</span>(<span class="str">"cloudFiles.schemaLocation"</span>,<span class="str">"/chk"</span>)
+    .<span class="fn">load</span>(<span class="str">"/landing/"</span>))
+
+<span class="fn">@dlt.expect_or_drop</span>(<span class="str">"valid_amount"</span>, <span class="str">"amount > 0"</span>)
+<span class="fn">@dlt.expect_or_fail</span>(<span class="str">"has_customer"</span>,
+                    <span class="str">"customer_id IS NOT NULL"</span>)
+<span class="fn">@dlt.table</span>()
+<span class="kw">def</span> <span class="fn">silver_orders</span>():
+  <span class="kw">return</span> dlt.<span class="fn">read_stream</span>(<span class="str">"bronze_raw"</span>)
+
+<span class="cm"># Read static table inside a pipeline</span>
+<span class="fn">@dlt.table</span>()
+<span class="kw">def</span> <span class="fn">enriched</span>():
+  orders    = dlt.<span class="fn">read</span>(<span class="str">"silver_orders"</span>)
+  customers = dlt.<span class="fn">read</span>(<span class="str">"dim_customers"</span>)
+  <span class="kw">return</span> orders.<span class="fn">join</span>(customers, <span class="str">"customer_id"</span>)</div>
+      <table style="margin-top:8px">
+        <tr><th>Mode</th><th>Expectation (SQL)</th><th>Decorator (Python)</th><th>On violation</th></tr>
+        <tr><td>Warn only</td><td><code>EXPECT</code></td><td><code>@dlt.expect</code></td><td>Track in metrics; keep rows</td></tr>
+        <tr><td>Drop rows</td><td><code>EXPECT … DROP ROW</code></td><td><code>@dlt.expect_or_drop</code></td><td>Discard bad rows; continue</td></tr>
+        <tr><td>Fail pipeline</td><td><code>EXPECT … FAIL UPDATE</code></td><td><code>@dlt.expect_or_fail</code></td><td>Stop entire pipeline run</td></tr>
+        <tr><td>Multi-rule warn</td><td>—</td><td><code>@dlt.expect_all({})</code></td><td>Track all; keep rows</td></tr>
+        <tr><td>Multi-rule drop</td><td>—</td><td><code>@dlt.expect_all_or_drop({})</code></td><td>Drop on any violation</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Delta Lake DDL / DML — complete reference <span class="badge hot">high frequency</span></h3>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm">-- Create variants</span>
+<span class="kw">CREATE OR REPLACE TABLE</span> t (
+  id  <span class="kw">STRING</span>, dt <span class="kw">DATE</span>, v <span class="kw">DOUBLE</span>
+) <span class="kw">USING DELTA</span>
+  <span class="kw">PARTITIONED BY</span> (dt)
+  <span class="kw">CLUSTER BY</span> (id)           <span class="cm">-- Liquid Clustering</span>
+  <span class="kw">LOCATION</span> <span class="str">'abfss://...'</span>    <span class="cm">-- external table</span>
+  COMMENT <span class="str">'My table'</span>
+  <span class="kw">TBLPROPERTIES</span> (<span class="str">'delta.enableChangeDataFeed'</span>=<span class="str">'true'</span>);
+
+<span class="kw">CREATE TABLE IF NOT EXISTS</span> t (...);          <span class="cm">-- skip if exists</span>
+<span class="kw">CREATE TABLE</span> t2 <span class="kw">AS SELECT</span> * <span class="kw">FROM</span> t;         <span class="cm">-- CTAS</span>
+
+<span class="cm">-- Alter</span>
+<span class="kw">ALTER TABLE</span> t <span class="kw">ADD COLUMNS</span> (new_col <span class="kw">STRING</span>);
+<span class="kw">ALTER TABLE</span> t <span class="kw">ALTER COLUMN</span> v <span class="kw">COMMENT</span> <span class="str">'Revenue'</span>;
+<span class="kw">ALTER TABLE</span> t <span class="kw">RENAME TO</span> t_new;
+<span class="kw">ALTER TABLE</span> t <span class="kw">CLUSTER BY</span> (id, dt);
+<span class="kw">ALTER TABLE</span> t <span class="kw">SET TBLPROPERTIES</span>(<span class="str">'key'</span>=<span class="str">'val'</span>);
+<span class="kw">ALTER TABLE</span> t <span class="kw">ADD CONSTRAINT</span> chk
+  <span class="kw">CHECK</span> (amount > <span class="num">0</span>);   <span class="cm">-- enforced on write</span>
+<span class="kw">ALTER TABLE</span> t <span class="kw">DROP CONSTRAINT</span> chk;
+
+<span class="cm">-- DML</span>
+<span class="kw">INSERT INTO</span> t <span class="kw">VALUES</span> (<span class="str">'a1'</span>,<span class="str">'2024-01-01'</span>,<span class="num">100.0</span>);
+<span class="kw">INSERT INTO</span> t <span class="kw">SELECT</span> * <span class="kw">FROM</span> staging;
+<span class="kw">INSERT OVERWRITE</span> t <span class="kw">SELECT</span> * <span class="kw">FROM</span> staging;
+<span class="kw">UPDATE</span> t <span class="kw">SET</span> v = v*<span class="num">1.1</span> <span class="kw">WHERE</span> dt=<span class="str">'2024-01-01'</span>;
+<span class="kw">DELETE FROM</span> t <span class="kw">WHERE</span> dt < <span class="str">'2023-01-01'</span>;</div>
+    </div>
+    <div>
+      <div class="cb"><span class="cm">-- MERGE: upsert + CDC delete</span>
+<span class="kw">MERGE INTO</span> silver.orders t
+<span class="kw">USING</span> bronze.raw s <span class="kw">ON</span> t.order_id = s.order_id
+<span class="kw">WHEN MATCHED AND</span> s.op=<span class="str">'DELETE'</span> <span class="kw">THEN DELETE</span>
+<span class="kw">WHEN MATCHED AND</span> s.updated_at > t.updated_at
+  <span class="kw">THEN UPDATE SET</span> t.amount=s.amount, t.status=s.status
+<span class="kw">WHEN NOT MATCHED THEN INSERT</span> *
+<span class="kw">WHEN NOT MATCHED BY SOURCE THEN DELETE</span>; <span class="cm">-- orphan cleanup</span>
+
+<span class="cm">-- Time travel</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> t <span class="kw">VERSION AS OF</span> <span class="num">5</span>;
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> t@v5;                        <span class="cm">-- shorthand</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> t <span class="kw">TIMESTAMP AS OF</span> <span class="str">'2024-06-01'</span>;
+<span class="kw">RESTORE TABLE</span> t <span class="kw">TO VERSION AS OF</span> <span class="num">3</span>;
+<span class="kw">RESTORE TABLE</span> t <span class="kw">TO TIMESTAMP AS OF</span> <span class="str">'2024-01-01'</span>;
+
+<span class="cm">-- Maintenance</span>
+<span class="kw">OPTIMIZE</span> t;
+<span class="kw">OPTIMIZE</span> t <span class="kw">ZORDER BY</span> (country, dt);
+<span class="kw">VACUUM</span> t RETAIN <span class="num">168</span> HOURS;
+
+<span class="cm">-- Inspect</span>
+<span class="kw">DESCRIBE TABLE</span> t;            <span class="cm">-- columns + types</span>
+<span class="kw">DESCRIBE TABLE EXTENDED</span> t;  <span class="cm">-- + location, properties</span>
+<span class="kw">DESCRIBE DETAIL</span> t;           <span class="cm">-- file stats, size, format</span>
+<span class="kw">DESCRIBE HISTORY</span> t;          <span class="cm">-- all versions + operations</span>
+<span class="kw">DESCRIBE HISTORY</span> t <span class="kw">LIMIT</span> <span class="num">5</span>; <span class="cm">-- last N versions</span>
+<span class="kw">DROP TABLE IF EXISTS</span> t;
+<span class="kw">DROP TABLE IF EXISTS</span> t PURGE;<span class="cm">-- also removes Delta log</span></div>
+      <div class="warn"><strong>Exam trap:</strong> <code>CREATE OR REPLACE TABLE</code> always creates (drops and recreates if exists). <code>CREATE TABLE IF NOT EXISTS</code> only creates if absent. <code>INSERT OVERWRITE</code> replaces all data but preserves table definition. These three are common wrong-answer traps.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>PySpark — aggregations, joins, and window functions <span class="badge hot">high frequency</span></h3>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="kw">from</span> pyspark.sql <span class="kw">import</span> Window
+<span class="kw">from</span> pyspark.sql.functions <span class="kw">import</span> (
+  col, lit, when, coalesce,
+  sum, count, count_distinct, avg, max, min,
+  first, last, collect_list, collect_set,
+  rank, dense_rank, row_number, lag, lead,
+  to_date, to_timestamp, date_format,
+  concat, split, trim, upper, lower,
+  regexp_replace, regexp_extract,
+  explode, array, struct,
+  from_json, to_json, schema_of_json, broadcast
+)
+
+<span class="cm"># groupBy + agg</span>
+df.<span class="fn">groupBy</span>(<span class="str">"dept"</span>, <span class="str">"date"</span>).<span class="fn">agg</span>(
+  <span class="fn">sum</span>(<span class="str">"salary"</span>).<span class="fn">alias</span>(<span class="str">"total_pay"</span>),
+  <span class="fn">count_distinct</span>(<span class="str">"emp_id"</span>).<span class="fn">alias</span>(<span class="str">"headcount"</span>),
+  <span class="fn">avg</span>(<span class="str">"salary"</span>).<span class="fn">alias</span>(<span class="str">"avg_pay"</span>),
+  <span class="fn">collect_set</span>(<span class="str">"role"</span>).<span class="fn">alias</span>(<span class="str">"roles"</span>)
+)
+
+<span class="cm"># Window functions</span>
+w = Window.<span class="fn">partitionBy</span>(<span class="str">"dept"</span>).<span class="fn">orderBy</span>(col(<span class="str">"salary"</span>).<span class="fn">desc</span>())
+df.<span class="fn">withColumn</span>(<span class="str">"rank"</span>,        <span class="fn">rank</span>().<span class="fn">over</span>(w))
+  .<span class="fn">withColumn</span>(<span class="str">"dense_rank"</span>,  <span class="fn">dense_rank</span>().<span class="fn">over</span>(w))
+  .<span class="fn">withColumn</span>(<span class="str">"row_number"</span>,  <span class="fn">row_number</span>().<span class="fn">over</span>(w))
+  .<span class="fn">withColumn</span>(<span class="str">"prev_salary"</span>, <span class="fn">lag</span>(<span class="str">"salary"</span>,<span class="num">1</span>).<span class="fn">over</span>(w))
+  .<span class="fn">withColumn</span>(<span class="str">"next_salary"</span>, <span class="fn">lead</span>(<span class="str">"salary"</span>,<span class="num">1</span>).<span class="fn">over</span>(w))</div>
+    </div>
+    <div>
+      <div class="cb"><span class="cm"># Join types</span>
+a.<span class="fn">join</span>(b, <span class="str">"id"</span>, <span class="str">"inner"</span>)        <span class="cm"># matching rows only</span>
+a.<span class="fn">join</span>(b, <span class="str">"id"</span>, <span class="str">"left"</span>)         <span class="cm"># all of a, matched b</span>
+a.<span class="fn">join</span>(b, <span class="str">"id"</span>, <span class="str">"right"</span>)        <span class="cm"># all of b, matched a</span>
+a.<span class="fn">join</span>(b, <span class="str">"id"</span>, <span class="str">"full"</span>)         <span class="cm"># all rows both sides</span>
+a.<span class="fn">join</span>(b, <span class="str">"id"</span>, <span class="str">"left_semi"</span>)   <span class="cm"># a rows where match exists</span>
+a.<span class="fn">join</span>(b, <span class="str">"id"</span>, <span class="str">"left_anti"</span>)   <span class="cm"># a rows with NO match</span>
+a.<span class="fn">join</span>(<span class="fn">broadcast</span>(b_small), <span class="str">"id"</span>) <span class="cm"># broadcast: avoids shuffle</span>
+
+<span class="cm"># Null handling</span>
+df.<span class="fn">fillna</span>({<span class="str">"amount"</span>:<span class="num">0</span>, <span class="str">"name"</span>:<span class="str">"unknown"</span>})
+df.<span class="fn">dropna</span>(how=<span class="str">"any"</span>, subset=[<span class="str">"id"</span>,<span class="str">"date"</span>])
+df.<span class="fn">withColumn</span>(<span class="str">"v"</span>, <span class="fn">coalesce</span>(col(<span class="str">"v"</span>), <span class="fn">lit</span>(<span class="num">0</span>)))
+
+<span class="cm"># Deduplication</span>
+df.<span class="fn">distinct</span>()
+df.<span class="fn">dropDuplicates</span>([<span class="str">"id"</span>, <span class="str">"date"</span>])
+
+<span class="cm"># Conditional logic</span>
+df.<span class="fn">withColumn</span>(<span class="str">"tier"</span>,
+  <span class="fn">when</span>(col(<span class="str">"score"</span>) > <span class="num">90</span>, <span class="str">"gold"</span>)
+  .<span class="fn">when</span>(col(<span class="str">"score"</span>) > <span class="num">70</span>, <span class="str">"silver"</span>)
+  .<span class="fn">otherwise</span>(<span class="str">"bronze"</span>))
+
+<span class="cm"># Partitioning</span>
+df.<span class="fn">repartition</span>(<span class="num">200</span>)               <span class="cm"># full shuffle; increase partitions</span>
+df.<span class="fn">repartition</span>(<span class="num">10</span>, col(<span class="str">"country"</span>)) <span class="cm"># shuffle by column</span>
+df.<span class="fn">coalesce</span>(<span class="num">1</span>)                    <span class="cm"># reduce partitions; no shuffle</span>
+
+<span class="cm"># Read Delta table (preferred)</span>
+spark.<span class="fn">table</span>(<span class="str">"catalog.schema.t"</span>)</div>
+      <div class="warn"><strong>Exam trap:</strong> <code>count("col")</code> counts non-null rows. <code>count_distinct("col")</code> counts unique values. Confusing these is the most common wrong answer in aggregation questions.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>UDFs and views</h3>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm">-- SQL UDF: stored in Unity Catalog</span>
+<span class="kw">CREATE OR REPLACE FUNCTION</span>
+  catalog.schema.<span class="fn">get_tier</span>(score <span class="kw">INT</span>)
+<span class="kw">RETURNS STRING</span>
+<span class="kw">RETURN CASE</span>
+  <span class="kw">WHEN</span> score >= <span class="num">90</span> <span class="kw">THEN</span> <span class="str">'gold'</span>
+  <span class="kw">WHEN</span> score >= <span class="num">70</span> <span class="kw">THEN</span> <span class="str">'silver'</span>
+  <span class="kw">ELSE</span> <span class="str">'bronze'</span>
+<span class="kw">END</span>;
+
+<span class="kw">GRANT EXECUTE ON FUNCTION</span>
+  catalog.schema.<span class="fn">get_tier</span> <span class="kw">TO</span> analysts;
+<span class="kw">DESCRIBE FUNCTION EXTENDED</span> catalog.schema.<span class="fn">get_tier</span>;
+
+<span class="cm">-- Views</span>
+<span class="kw">CREATE OR REPLACE VIEW</span> catalog.schema.v_active
+<span class="kw">AS SELECT</span> * <span class="kw">FROM</span> orders <span class="kw">WHERE</span> status=<span class="str">'active'</span>;
+
+df.<span class="fn">createOrReplaceTempView</span>(<span class="str">"tmp_orders"</span>) <span class="cm">-- session scope</span>
+df.<span class="fn">createGlobalTempView</span>(<span class="str">"global_orders"</span>) <span class="cm">-- cluster scope</span>
+spark.<span class="fn">sql</span>(<span class="str">"SELECT * FROM global_temp.global_orders"</span>)</div>
+    </div>
+    <div>
+      <div class="cb"><span class="kw">from</span> pyspark.sql.functions <span class="kw">import</span> udf, pandas_udf
+<span class="kw">from</span> pyspark.sql.types <span class="kw">import</span> StringType, DoubleType
+<span class="kw">import</span> pandas <span class="kw">as</span> pd
+
+<span class="cm"># Row-level Python UDF (slow — serialises row-by-row)</span>
+<span class="fn">@udf</span>(StringType())
+<span class="kw">def</span> <span class="fn">clean_name</span>(s): <span class="kw">return</span> s.strip().<span class="fn">title</span>() <span class="kw">if</span> s <span class="kw">else None</span>
+df.<span class="fn">withColumn</span>(<span class="str">"name"</span>, <span class="fn">clean_name</span>(col(<span class="str">"raw"</span>)))
+
+<span class="cm"># Register for Spark SQL use</span>
+spark.udf.<span class="fn">register</span>(<span class="str">"clean_name"</span>, clean_name)
+
+<span class="cm"># Vectorised Pandas UDF (fast — operates on Series)</span>
+<span class="fn">@pandas_udf</span>(DoubleType())
+<span class="kw">def</span> <span class="fn">apply_tax</span>(amount: pd.Series, rate: pd.Series) -> pd.Series:
+    <span class="kw">return</span> amount * (<span class="num">1</span> + rate)
+df.<span class="fn">withColumn</span>(<span class="str">"after_tax"</span>, <span class="fn">apply_tax</span>(col(<span class="str">"amount"</span>),col(<span class="str">"rate"</span>)))</div>
+      <table style="margin-top:8px">
+        <tr><th>View type</th><th>Scope</th><th>Persisted</th><th>Prefix needed</th></tr>
+        <tr><td>View</td><td>All sessions, all clusters</td><td>Yes (metastore)</td><td><code>catalog.schema.name</code></td></tr>
+        <tr><td>Temp view</td><td>Current session only</td><td>No</td><td>None</td></tr>
+        <tr><td>Global temp view</td><td>All sessions, same cluster</td><td>No</td><td><code>global_temp.name</code></td></tr>
+      </table>
+      <div class="info"><strong>UDF performance:</strong> Built-in Spark functions &gt; Pandas UDF &gt; Python UDF. Catalyst optimizer cannot optimise UDFs — always prefer built-in functions where possible.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ============================= SECTION 4 ============================= -->
+<div id="s4" class="section s4">
+<div class="grid">
+
+<div class="card full">
+  <h3>Databricks Asset Bundles (DAB) <span class="badge new">key topic</span> <span class="badge hot">high frequency</span></h3>
+  <p>DAB is the modern way to define, deploy, and manage Databricks resources as code. Everything — jobs, pipelines, clusters, schedules, permissions — is declared in YAML and deployed via the CLI. It replaces manual UI configuration and enables proper CI/CD workflows with Git.</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm"># CLI commands</span>
+databricks bundle init            <span class="cm"># scaffold new project</span>
+databricks bundle validate        <span class="cm"># check YAML syntax</span>
+databricks bundle deploy          <span class="cm"># deploy to default target</span>
+databricks bundle deploy --target prod
+databricks bundle run my_job      <span class="cm"># trigger a run</span>
+databricks bundle run my_pipeline
+databricks bundle destroy         <span class="cm"># remove all resources</span>
+databricks bundle summary         <span class="cm"># list deployed resources</span>
+
+<span class="cm"># databricks.yml — full structure</span>
+bundle:
+  name: sales_pipeline
+
+variables:
+  env:
+    default: dev
+
+targets:
+  dev:
+    mode: development      <span class="cm"># prefixes names: [dev username]</span>
+    default: true
+    workspace:
+      host: https://adb-xxx.azuredatabricks.net
+  prod:
+    mode: production       <span class="cm"># no prefix; strict permissions</span>
+    workspace:
+      host: https://adb-yyy.azuredatabricks.net</div>
+    </div>
+    <div>
+      <div class="cb">resources:
+  jobs:
+    daily_etl:
+      name: <span class="str">"Daily ETL (${var.env})"</span>
+      schedule:
+        quartz_cron_expression: <span class="str">"0 0 6 * * ?"</span>
+        timezone_id: <span class="str">"UTC"</span>
+      job_clusters:
+        - job_cluster_key: main
+          new_cluster:
+            spark_version: <span class="str">"14.3.x-scala2.12"</span>
+            node_type_id: Standard_D4s_v3
+            num_workers: <span class="num">4</span>
+      tasks:
+        - task_key: ingest
+          job_cluster_key: main
+          notebook_task:
+            notebook_path: ./notebooks/01_bronze
+            base_parameters:
+              env: <span class="str">"${var.env}"</span>
+        - task_key: transform
+          depends_on: [{task_key: ingest}]
+          job_cluster_key: main
+          notebook_task:
+            notebook_path: ./notebooks/02_silver
+        - task_key: pipeline
+          depends_on: [{task_key: transform}]
+          pipeline_task:
+            pipeline_id: <span class="str">"${resources.pipelines.gold.id}"</span>
+
+  pipelines:
+    gold:
+      name: <span class="str">"Gold Pipeline (${var.env})"</span>
+      libraries:
+        - notebook: {path: ./pipelines/gold_dlt}</div>
+      <table style="margin-top:8px">
+        <tr><th>Traditional</th><th>DAB (as code)</th></tr>
+        <tr><td>Manual UI clicks</td><td>YAML definitions in Git</td></tr>
+        <tr><td>No versioning</td><td>Full Git history</td></tr>
+        <tr><td>Hard to replicate</td><td>Repeatable across envs</td></tr>
+        <tr><td>Environment drift</td><td>Dev/staging/prod parity via targets</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Workflows — task types, repair, and orchestration <span class="badge hot">high frequency</span></h3>
+  <p>Databricks Workflows is the native orchestrator for multi-task jobs. Tasks are connected in a DAG via <code>depends_on</code>. The <strong>Repair &amp; Rerun</strong> feature re-executes only failed tasks and their downstream dependents — a heavily tested concept.</p>
+  <div class="two">
+    <div>
+      <table>
+        <tr><th>Task type</th><th>Use when</th></tr>
+        <tr><td>Notebook</td><td>Interactive ETL logic in a notebook</td></tr>
+        <tr><td>Python script</td><td>Modular Python code in Repos/workspace</td></tr>
+        <tr><td>Python wheel</td><td>Packaged library with entry point</td></tr>
+        <tr><td>JAR</td><td>Scala/Java compiled jobs</td></tr>
+        <tr><td>SQL</td><td>SQL transformations on a SQL warehouse</td></tr>
+        <tr><td>Lakeflow Pipeline</td><td>Trigger a Lakeflow declarative pipeline</td></tr>
+        <tr><td>dbt</td><td>dbt models and tests</td></tr>
+        <tr><td>Run job</td><td>Reuse another existing job as a subtask</td></tr>
+      </table>
+      <div class="cb" style="margin-top:8px"><span class="cm"># Pass values between tasks</span>
+<span class="cm"># In upstream task:</span>
+dbutils.jobs.taskValues.<span class="fn">set</span>(key=<span class="str">"row_count"</span>, value=<span class="num">12345</span>)
+
+<span class="cm"># In downstream task:</span>
+count = dbutils.jobs.taskValues.<span class="fn">get</span>(
+  taskKey=<span class="str">"ingest_bronze"</span>,
+  key=<span class="str">"row_count"</span>,
+  default=<span class="num">0</span>
+)</div>
+    </div>
+    <div>
+      <ul class="bullets">
+        <li><strong>Repair &amp; Rerun</strong> — re-runs the failed task and all downstream dependents only; already-succeeded tasks are skipped. This is always the correct answer for "efficient failure recovery" scenarios.</li>
+        <li><strong>Retry policy</strong> — set <code>max_retries</code> and <code>min_retry_interval_millis</code> per task</li>
+        <li><strong>Conditional run</strong> — <code>run_if</code>: ALL_SUCCESS / AT_LEAST_ONE_SUCCESS / NONE_FAILED / AT_LEAST_ONE_FAILED / ALL_DONE</li>
+        <li><strong>Timeout</strong> — <code>timeout_seconds</code> per task or per job; auto-cancels overrunning jobs</li>
+        <li><strong>Max concurrent runs</strong> — prevent scheduled runs from overlapping</li>
+        <li><strong>File arrival trigger</strong> — polls a path for new files; starts job when detected</li>
+        <li><strong>Task cluster options</strong> — job cluster (dedicated), existing all-purpose, serverless, or pool</li>
+      </ul>
+      <div class="ok"><strong>Orchestration patterns:</strong> Fan-out = task A triggers [B, C, D] in parallel. Fan-in = [A, B] must both succeed before C starts. Diamond = fan-out + fan-in combined. Define the DAG using <code>depends_on</code> lists.</div>
+      <div class="warn"><strong>Exam trap:</strong> "Repair run" re-executes from the failed task — not from the beginning. Choosing "re-run the entire job" is the wrong answer for recovery scenarios.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Spark UI — reading and optimising <span class="badge hot">high frequency</span></h3>
+  <p>The Spark UI is the primary tool for diagnosing performance issues. Each tab exposes a different layer of the execution — knowing which tab to look at for a given symptom is a testable skill.</p>
+  <div class="two">
+    <div>
+      <table>
+        <tr><th>Tab</th><th>What to look for</th><th>Problem signal</th></tr>
+        <tr><td>Jobs</td><td>Duration per job action</td><td>One job dominates total time</td></tr>
+        <tr><td>Stages</td><td>Shuffle read/write size, spill to disk</td><td>One stage takes 80%+ of total time</td></tr>
+        <tr><td>Tasks</td><td>Duration spread across tasks</td><td>One task 10× slower than others = data skew</td></tr>
+        <tr><td>SQL / DataFrame</td><td>Physical plan, pushed filters, join type</td><td>Missing pushed filter; SortMergeJoin instead of BroadcastHashJoin</td></tr>
+        <tr><td>Storage</td><td>Cached fraction, memory used</td><td>Cache eviction mid-job</td></tr>
+        <tr><td>Executors</td><td>GC time %, memory used per executor</td><td>GC &gt; 5% = memory pressure; increase executor memory</td></tr>
+        <tr><td>Environment</td><td>Spark config values in effect</td><td>Verify AQE is on, broadcast threshold</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="cb"><span class="cm"># View query execution plan</span>
+df.<span class="fn">explain</span>()                  <span class="cm"># physical plan only</span>
+df.<span class="fn">explain</span>(<span class="str">"extended"</span>)       <span class="cm"># logical + physical</span>
+df.<span class="fn">explain</span>(<span class="str">"formatted"</span>)      <span class="cm"># readable tree format</span>
+df.<span class="fn">explain</span>(<span class="str">"cost"</span>)           <span class="cm"># with cost estimates</span>
+
+<span class="cm"># Key Spark config for performance</span>
+spark.conf.<span class="fn">set</span>(<span class="str">"spark.sql.adaptive.enabled"</span>, <span class="str">"true"</span>)
+spark.conf.<span class="fn">set</span>(<span class="str">"spark.sql.adaptive.skewJoin.enabled"</span>, <span class="str">"true"</span>)
+spark.conf.<span class="fn">set</span>(<span class="str">"spark.sql.shuffle.partitions"</span>, <span class="str">"400"</span>)
+spark.conf.<span class="fn">set</span>(<span class="str">"spark.sql.autoBroadcastJoinThreshold"</span>, <span class="str">"100m"</span>)
+
+<span class="cm"># GitHub Actions: deploy bundle on push to main</span>
+<span class="cm"># name: Deploy</span>
+<span class="cm"># on: push: branches: [main]</span>
+<span class="cm"># jobs: deploy: steps:</span>
+<span class="cm">#   - uses: databricks/setup-cli@main</span>
+<span class="cm">#   - run: databricks bundle deploy --target prod</span>
+<span class="cm">#     env:</span>
+<span class="cm">#       DATABRICKS_HOST: ${{ secrets.DB_HOST }}</span>
+<span class="cm">#       DATABRICKS_TOKEN: ${{ secrets.DB_TOKEN }}</span></div>
+      <div class="warn"><strong>Data skew fix:</strong> Enable AQE skew join handling (<code>skewJoin.enabled=true</code>), or salt the join key manually (append random suffix to both sides, then aggregate and remove). Skewed agg → two-phase local-then-global aggregation.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Serverless vs classic cluster</h3>
+  <table>
+    <tr><th></th><th>Serverless</th><th>Classic cluster</th></tr>
+    <tr><td>Startup time</td><td>Seconds</td><td>2–5 minutes</td></tr>
+    <tr><td>Management</td><td>None — Databricks manages infra</td><td>You configure instance type, Spark config</td></tr>
+    <tr><td>Scaling</td><td>Auto; scales to zero when idle</td><td>Manual or autoscale; idle cost</td></tr>
+    <tr><td>Instance type</td><td>Cannot choose</td><td>Full control</td></tr>
+    <tr><td>Spark config</td><td>Limited customisation</td><td>Full control</td></tr>
+    <tr><td>DBU cost</td><td>Higher per DBU</td><td>Lower per DBU; pay for idle time</td></tr>
+    <tr><td>Best for</td><td>Intermittent jobs, SQL warehouses, pipelines</td><td>Long-running jobs, custom config requirements</td></tr>
+  </table>
+</div>
+
+</div>
+</div>
+
+<!-- ============================= SECTION 5 ============================= -->
+<div id="s5" class="section s5">
+<div class="grid">
+
+<div class="card full">
+  <h3>Unity Catalog — hierarchy, roles, and permissions <span class="badge hot">high frequency</span></h3>
+  <p>Unity Catalog is the centralised governance layer for all Databricks assets. It uses a three-level namespace — <code>catalog.schema.table</code> — and a privilege model where users must have USE access at every level of the hierarchy before object-level privileges take effect. This hierarchical requirement is the most frequently tested concept in this domain.</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm">-- Minimum read access (all three required)</span>
+<span class="kw">GRANT USE CATALOG ON CATALOG</span> prod <span class="kw">TO</span> analysts;
+<span class="kw">GRANT USE SCHEMA ON SCHEMA</span> prod.sales <span class="kw">TO</span> analysts;
+<span class="kw">GRANT SELECT ON TABLE</span> prod.sales.orders <span class="kw">TO</span> analysts;
+
+<span class="cm">-- Schema-level (applies to all objects in schema)</span>
+<span class="kw">GRANT SELECT ON SCHEMA</span> prod.sales <span class="kw">TO</span> analysts;
+<span class="kw">GRANT MODIFY ON TABLE</span> prod.sales.orders <span class="kw">TO</span> `eng-team`;
+<span class="kw">GRANT CREATE TABLE ON SCHEMA</span> dev.staging <span class="kw">TO</span> `eng`;
+<span class="kw">GRANT CREATE VIEW ON SCHEMA</span> dev.staging <span class="kw">TO</span> `eng`;
+
+<span class="cm">-- Catalog-level</span>
+<span class="kw">GRANT ALL PRIVILEGES ON CATALOG</span> dev <span class="kw">TO</span> `dev-team`;
+<span class="kw">GRANT CREATE SCHEMA ON CATALOG</span> dev <span class="kw">TO</span> `eng`;
+
+<span class="cm">-- Function privileges</span>
+<span class="kw">GRANT EXECUTE ON FUNCTION</span> prod.utils.fn <span class="kw">TO</span> analysts;
+
+<span class="cm">-- Revoke and inspect</span>
+<span class="kw">REVOKE SELECT ON TABLE</span> t <span class="kw">FROM</span> analysts;
+<span class="kw">SHOW GRANTS ON TABLE</span> prod.sales.orders;
+<span class="kw">SHOW GRANTS TO</span> analysts;
+<span class="kw">SHOW GRANTS ON CATALOG</span> prod;</div>
+    </div>
+    <div>
+      <table>
+        <tr><th>Privilege</th><th>Allows</th></tr>
+        <tr><td>USE CATALOG</td><td>Navigate into a catalog (required first)</td></tr>
+        <tr><td>USE SCHEMA</td><td>Navigate into a schema (required second)</td></tr>
+        <tr><td>SELECT</td><td>Read data from table or view</td></tr>
+        <tr><td>MODIFY</td><td>INSERT, UPDATE, DELETE on table</td></tr>
+        <tr><td>CREATE TABLE</td><td>Create tables within a schema</td></tr>
+        <tr><td>CREATE VIEW</td><td>Create views within a schema</td></tr>
+        <tr><td>CREATE SCHEMA</td><td>Create schemas within a catalog</td></tr>
+        <tr><td>EXECUTE</td><td>Run a UDF or function</td></tr>
+        <tr><td>READ VOLUME</td><td>Read files from a UC volume</td></tr>
+        <tr><td>ALL PRIVILEGES</td><td>Every privilege on the object</td></tr>
+      </table>
+      <div class="warn"><strong>Exam trap:</strong> A user needs USE CATALOG + USE SCHEMA + SELECT on the table. Missing any single one means access is denied — even if SELECT is granted. This three-step requirement is the most common wrong answer in permission questions.</div>
+      <div class="info"><strong>Hierarchy:</strong> One metastore per region per account. Multiple workspaces share one metastore. Default catalog is <code>main</code>. Legacy per-workspace catalog is <code>hive_metastore</code> (not UC-governed). System tables live in <code>system</code> catalog.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Managed vs external tables <span class="badge hot">high frequency</span></h3>
+  <p>The key distinction is who owns the data lifecycle. With managed tables, Unity Catalog controls both the metadata and the underlying data files — dropping the table deletes everything. With external tables, you own the files; dropping the table only removes the metadata entry in UC.</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm">-- Managed: UC controls data + metadata lifecycle</span>
+<span class="kw">CREATE TABLE</span> prod.sales.orders (
+  order_id <span class="kw">STRING</span>, amount <span class="kw">DOUBLE</span>, dt <span class="kw">DATE</span>
+) <span class="kw">USING DELTA</span>;
+<span class="cm">-- Data stored at UC-managed path automatically</span>
+<span class="cm">-- DROP TABLE = deletes data files + metadata</span>
+
+<span class="cm">-- External: you control the data location</span>
+<span class="kw">CREATE TABLE</span> prod.sales.orders_ext (
+  order_id <span class="kw">STRING</span>, amount <span class="kw">DOUBLE</span>
+) <span class="kw">USING DELTA</span>
+<span class="kw">LOCATION</span> <span class="str">'abfss://container@storage.dfs.core.windows.net/orders'</span>;
+<span class="cm">-- DROP TABLE = removes UC metadata only</span>
+<span class="cm">-- Data files remain in ADLS/S3/GCS</span>
+
+<span class="cm">-- Check type</span>
+<span class="kw">DESCRIBE DETAIL</span> prod.sales.orders;
+<span class="cm">-- "type" column = MANAGED or EXTERNAL</span>
+
+<span class="cm">-- External location + storage credential (prerequisite)</span>
+<span class="kw">CREATE STORAGE CREDENTIAL</span> my_cred
+  <span class="kw">WITH AZURE MANAGED IDENTITY</span> APPLICATION_ID <span class="str">'xxx'</span>;
+
+<span class="kw">CREATE EXTERNAL LOCATION</span> my_loc
+  <span class="kw">URL</span> <span class="str">'abfss://container@storage.dfs.core.windows.net/'</span>
+  <span class="kw">WITH</span> (STORAGE CREDENTIAL my_cred);
+
+<span class="kw">GRANT READ FILES ON EXTERNAL LOCATION</span> my_loc
+  <span class="kw">TO</span> `eng-team`;</div>
+    </div>
+    <div>
+      <table>
+        <tr><th>Scenario</th><th>Use managed or external?</th></tr>
+        <tr><td>Databricks owns full lifecycle</td><td>Managed</td></tr>
+        <tr><td>Data pre-exists in cloud storage</td><td>External</td></tr>
+        <tr><td>Data shared with non-Databricks tools</td><td>External</td></tr>
+        <tr><td>Drop table but keep data files</td><td>External</td></tr>
+        <tr><td>Simplest setup, no LOCATION config</td><td>Managed</td></tr>
+        <tr><td>Data retention governed by your team</td><td>External</td></tr>
+      </table>
+      <div class="warn"><strong>Exam trap:</strong> Dropping a managed table permanently deletes the underlying Parquet files. If you need to remove a table from UC while keeping the data — use an external table. This is the scenario the exam tests most often.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Delta Sharing <span class="badge new">expanded topic</span> <span class="badge hot">high frequency</span></h3>
+  <p>Delta Sharing is an open protocol for sharing live Delta data without copying or moving it. Recipients query your storage directly via signed URLs — data never leaves your account. Two flavours: D2D (recipient has Databricks) and D2O (recipient uses any platform via the open protocol).</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm">-- Step 1: create a share</span>
+<span class="kw">CREATE SHARE</span> orders_share
+  COMMENT <span class="str">'Orders data for partners'</span>;
+
+<span class="cm">-- Step 2: add tables to share</span>
+<span class="kw">ALTER SHARE</span> orders_share
+  <span class="kw">ADD TABLE</span> prod.sales.orders;
+
+<span class="kw">ALTER SHARE</span> orders_share
+  <span class="kw">ADD TABLE</span> prod.sales.orders
+  <span class="kw">PARTITION BY</span> (dt)          <span class="cm">-- filter by partition</span>
+  <span class="kw">AS</span> <span class="str">'shared_orders'</span>;         <span class="cm">-- alias for recipient</span>
+
+<span class="kw">ALTER SHARE</span> orders_share
+  <span class="kw">ADD SCHEMA</span> prod.sales;      <span class="cm">-- share entire schema</span>
+
+<span class="cm">-- Step 3: create recipient</span>
+<span class="kw">CREATE RECIPIENT</span> acme_corp
+  COMMENT <span class="str">'External partner ACME'</span>;
+<span class="cm">-- Returns: activation_link (send to recipient)</span>
+
+<span class="cm">-- Step 4: grant recipient access</span>
+<span class="kw">GRANT SELECT ON SHARE</span> orders_share
+  <span class="kw">TO RECIPIENT</span> acme_corp;
+
+<span class="cm">-- Inspect and revoke</span>
+<span class="kw">SHOW SHARES</span>;
+<span class="kw">DESCRIBE SHARE</span> orders_share;
+<span class="kw">SHOW RECIPIENTS</span>;
+<span class="kw">REVOKE SELECT ON SHARE</span> orders_share <span class="kw">FROM RECIPIENT</span> acme_corp;
+<span class="kw">DROP RECIPIENT</span> acme_corp;</div>
+    </div>
+    <div>
+      <table>
+        <tr><th></th><th>D2D (Databricks-to-Databricks)</th><th>D2O (Databricks-to-Open)</th></tr>
+        <tr><td>Recipient</td><td>Another Databricks workspace</td><td>Any platform (Pandas, Power BI, Spark, etc.)</td></tr>
+        <tr><td>Auth</td><td>Unity Catalog identity federation</td><td>Activation URL + credential file</td></tr>
+        <tr><td>Access</td><td>Browse share as a catalog in UC</td><td>Use Delta Sharing client library</td></tr>
+        <tr><td>Permissions</td><td>READ only (external); UC grants for internal</td><td>READ only — always</td></tr>
+        <tr><td>Data movement</td><td>None — recipients query your storage</td><td>None — recipients query your storage</td></tr>
+      </table>
+      <table style="margin-top:8px">
+        <tr><th>Cross-cloud cost consideration</th><th>Detail</th></tr>
+        <tr><td>Same region, same cloud</td><td>No egress cost; lowest latency</td></tr>
+        <tr><td>Cross-region, same cloud</td><td>Egress charges apply</td></tr>
+        <tr><td>Cross-cloud (e.g. AWS ↔ Azure)</td><td>Highest egress cost; consider replicating to recipient's region</td></tr>
+      </table>
+      <div class="warn"><strong>Exam trap:</strong> External recipients via Delta Share = READ ONLY, always. Internal teams get READ/WRITE via Unity Catalog grants directly — not via Delta Share. Never grant external partners WRITE access through Delta Share.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Lakehouse Federation <span class="badge new">new topic</span></h3>
+  <p>Lakehouse Federation lets you query external databases directly from Databricks — without moving the data. The external source is registered as a foreign catalog in Unity Catalog and is governed with the same GRANT/REVOKE model as native tables.</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm">-- Step 1: create a connection to external DB</span>
+<span class="kw">CREATE CONNECTION</span> pg_prod
+  <span class="kw">TYPE</span> postgresql
+  <span class="kw">OPTIONS</span> (
+    host     <span class="str">'db.prod.example.com'</span>,
+    port     <span class="str">'5432'</span>,
+    database <span class="str">'orders_db'</span>,
+    user     <span class="str">'readonly_user'</span>,
+    password secret(<span class="str">'my-scope'</span>, <span class="str">'pg-password'</span>)
+  );
+
+<span class="cm">-- Step 2: expose as foreign catalog in UC</span>
+<span class="kw">CREATE FOREIGN CATALOG</span> pg_prod_catalog
+  <span class="kw">USING CONNECTION</span> pg_prod;
+
+<span class="cm">-- Step 3: query like any UC object</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> pg_prod_catalog.public.orders <span class="kw">LIMIT</span> <span class="num">100</span>;
+
+<span class="cm">-- Cross-system join (Databricks + external)</span>
+<span class="kw">SELECT</span> o.order_id, c.name
+<span class="kw">FROM</span> pg_prod_catalog.public.orders o
+<span class="kw">JOIN</span> prod.sales.customers c <span class="kw">ON</span> o.cust_id = c.id;
+
+<span class="cm">-- Grant access to foreign catalog</span>
+<span class="kw">GRANT USE CATALOG ON CATALOG</span> pg_prod_catalog <span class="kw">TO</span> analysts;
+<span class="kw">GRANT SELECT ON TABLE</span>
+  pg_prod_catalog.public.orders <span class="kw">TO</span> analysts;</div>
+    </div>
+    <div>
+      <table>
+        <tr><th>Connection type</th><th>Supported sources</th></tr>
+        <tr><td>postgresql</td><td>PostgreSQL, Amazon RDS PG, Aurora PG</td></tr>
+        <tr><td>mysql</td><td>MySQL, Amazon RDS MySQL, Aurora MySQL</td></tr>
+        <tr><td>sqlserver</td><td>SQL Server, Azure SQL DB</td></tr>
+        <tr><td>snowflake</td><td>Snowflake</td></tr>
+        <tr><td>bigquery</td><td>Google BigQuery</td></tr>
+        <tr><td>redshift</td><td>Amazon Redshift</td></tr>
+        <tr><td>databricks</td><td>Another Databricks workspace</td></tr>
+      </table>
+      <ul class="bullets" style="margin-top:8px">
+        <li>No data is copied — queries execute against the external system directly</li>
+        <li>UC governance applies — same GRANT/REVOKE model as native tables</li>
+        <li><strong>Use for:</strong> unified view, migration projects, cross-system joins, hybrid architectures</li>
+        <li><strong>Not suited for:</strong> high-throughput ETL, streaming sources, or write-back operations</li>
+        <li>Secrets in connection strings are never exposed in plain text</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Lineage, audit logs, and system tables</h3>
+  <p>Unity Catalog automatically tracks column-level and table-level lineage — no setup required. All access events are logged to system tables, making them queryable just like any Delta table. This enables both governance audits and operational observability.</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm">-- Audit: who accessed what and when</span>
+<span class="kw">SELECT</span>
+  event_time, user_name, action_name,
+  request_params.table_full_name <span class="kw">AS</span> table_name
+<span class="kw">FROM</span> system.access.audit
+<span class="kw">WHERE</span> action_name = <span class="str">'commandSubmit'</span>
+  <span class="kw">AND</span> event_date = current_date()
+<span class="kw">ORDER BY</span> event_time <span class="kw">DESC</span>;
+
+<span class="cm">-- Table lineage</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> system.access.table_lineage
+<span class="kw">WHERE</span> target_table_full_name = <span class="str">'prod.sales.orders'</span>;
+
+<span class="cm">-- Column lineage</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> system.access.column_lineage
+<span class="kw">WHERE</span> target_table_full_name = <span class="str">'prod.sales.orders'</span>;
+
+<span class="cm">-- Billing usage (last 30 days)</span>
+<span class="kw">SELECT</span> workspace_id, sku_name,
+  <span class="fn">SUM</span>(usage_quantity) <span class="kw">AS</span> dbus
+<span class="kw">FROM</span> system.billing.usage
+<span class="kw">WHERE</span> usage_date >= dateadd(<span class="kw">DAY</span>,-<span class="num">30</span>,current_date())
+<span class="kw">GROUP BY</span> <span class="num">1</span>, <span class="num">2</span>;</div>
+    </div>
+    <div>
+      <div class="cb"><span class="cm">-- Tag columns for PII tracking</span>
+<span class="kw">ALTER TABLE</span> prod.sales.customers
+  <span class="kw">ALTER COLUMN</span> email
+  <span class="kw">SET TAGS</span> (<span class="str">'pii'</span>=<span class="str">'true'</span>, <span class="str">'sensitivity'</span>=<span class="str">'high'</span>);
+
+<span class="kw">ALTER TABLE</span> prod.sales.customers
+  <span class="kw">SET TAGS</span> (<span class="str">'domain'</span>=<span class="str">'customer'</span>, <span class="str">'owner'</span>=<span class="str">'data-eng'</span>);
+
+<span class="kw">SHOW TAGS ON TABLE</span> prod.sales.customers;
+<span class="kw">SHOW TAGS ON COLUMN</span> prod.sales.customers.email;
+
+<span class="cm">-- Row-level security via dynamic view</span>
+<span class="kw">CREATE VIEW</span> secure_orders <span class="kw">AS</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> orders
+<span class="kw">WHERE</span> region = <span class="fn">current_user</span>()    <span class="cm">-- filter by logged-in user</span>
+   <span class="kw">OR</span> <span class="kw">IS_MEMBER</span>(<span class="str">'admins'</span>);        <span class="cm">-- admins see everything</span>
+
+<span class="cm">-- Data quality constraint (enforced on write)</span>
+<span class="kw">ALTER TABLE</span> t <span class="kw">ADD CONSTRAINT</span> chk_amount
+  <span class="kw">CHECK</span> (amount > <span class="num">0</span>);
+
+<span class="cm">-- Secrets management</span>
+pw = dbutils.secrets.<span class="fn">get</span>(scope=<span class="str">"my-scope"</span>, key=<span class="str">"db-pass"</span>)
+<span class="cm"># Always prints as [REDACTED] in notebook output</span>
+
+<span class="cm">-- In SQL connection strings</span>
+<span class="cm">-- password secret('my-scope','db-password')</span></div>
+      <div class="info"><strong>CHECK vs Lakeflow expectation:</strong> A <code>CHECK</code> constraint is enforced at write time — violations cause an error and the write fails. Lakeflow pipeline expectations offer three modes (warn, drop, fail) and are better suited for data quality monitoring with metrics tracking.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+function show(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
