@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist -dest exam-mocks/de-associate --add"
+    "deploy": "gh-pages -d dist --dest exam-mocks/de-associate --add -b de-associate-exam-mock"
   },
   "dependencies": {
     "react": "^19.2.4",

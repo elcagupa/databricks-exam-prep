@@ -49,7 +49,7 @@ const ALL_QUESTIONS = [
   { id:31, domain:4, q:"Which component of a Databricks Asset Bundle defines the target environment configurations?", opts:["resources/ directory","databricks.yml targets section","src/ directory","requirements.txt"], ans:1, exp:"The databricks.yml file contains the 'targets' section that defines environment-specific configurations (dev, staging, prod) for a DAB." },
 
   // Domain 5 – Governance & Quality (11%)
-  { id:32, domain:5, q:"What happens to data files when a MANAGED Delta table is dropped in Unity Catalog?", opts:["Data files are retained; only metadata is deleted","Data files are also deleted along with the metadata","Data files are moved to the external location","Data files are archived to cloud storage"], ans:0, exp:"With MANAGED tables, dropping the table deletes both the metadata AND the underlying data files. With EXTERNAL tables, only metadata is removed." },
+  { id:32, domain:5, q:"What happens to data files when a MANAGED Delta table is dropped in Unity Catalog?", opts:["Data files are retained; only metadata is deleted","Data files are also deleted along with the metadata","Data files are moved to the external location","Data files are archived to cloud storage"], ans:1, exp:"With MANAGED tables, dropping the table deletes both the metadata AND the underlying data files. With EXTERNAL tables, only metadata is removed." },
   { id:33, domain:5, q:"A data engineer wants to grant the analyst group read-only access to the sales_data schema. They already have USE CATALOG and USE SCHEMA. Which SQL is correct?", opts:["GRANT ALL PRIVILEGES ON SCHEMA sales_data TO analysts","GRANT SELECT ON SCHEMA sales_data TO analysts","GRANT INSERT ON SCHEMA sales_data TO analysts","GRANT SELECT ON ALL TABLES IN SCHEMA sales_data TO analysts"], ans:1, exp:"GRANT SELECT ON SCHEMA grants SELECT on all current and future tables in the schema. GRANT SELECT ON ALL TABLES only covers existing tables." },
   { id:34, domain:5, q:"Which role in Unity Catalog has the highest level of administrative control over a metastore?", opts:["Schema owner","Catalog owner","Metastore admin","Account admin"], ans:2, exp:"The Metastore Admin in Unity Catalog has the broadest permissions, including managing catalogs, external locations, and storage credentials." },
   { id:35, domain:5, q:"A data engineer configures Delta Sharing for external partners. What permission can external partners receive through a Delta Share?", opts:["READ/WRITE on the share","READ only on the share","Admin access to the Unity Catalog","Full SQL privileges"], ans:1, exp:"Delta Sharing only grants READ permissions to recipients. External partners cannot write to shared data; write access is managed internally through UC." },
@@ -58,16 +58,103 @@ const ALL_QUESTIONS = [
   { id:38, domain:5, q:"A company wants to share data with a partner company using Databricks. The partner uses their own Databricks workspace. Which sharing type applies?", opts:["External Delta Sharing","Databricks-to-Databricks Delta Sharing","JDBC Federation","Lakehouse Federation"], ans:1, exp:"Databricks-to-Databricks Delta Sharing allows sharing data between Databricks organizations, with the recipient accessing data directly in their workspace." },
   { id:39, domain:5, q:"What is a key cost consideration when using Delta Sharing to share data across different clouds (e.g., AWS to Azure)?", opts:["Delta Sharing is free across clouds","Egress costs are incurred when data crosses cloud provider boundaries","Only ingress is charged","There are no network costs with Delta Sharing"], ans:1, exp:"Cross-cloud data sharing incurs cloud egress charges since data physically travels across cloud providers. This is a key cost consideration." },
   { id:40, domain:5, q:"A data engineer needs to query data from an external PostgreSQL database without moving the data into Databricks. Which feature enables this?", opts:["Delta Sharing","Auto Loader","Lakehouse Federation","Unity Catalog External Tables"], ans:2, exp:"Lakehouse Federation allows Databricks to query external database systems (PostgreSQL, MySQL, Snowflake) in-place via federated query, without data movement." },
-  { id:41, domain:5, q:"How can a data engineer tag a table column as containing PII data in Unity Catalog?", opts:["Using ALTER TABLE SET TBLPROPERTIES with a pii key","Using Unity Catalog tags (ALTER TABLE column SET TAGS)","Using COMMENT on column during CREATE TABLE","Both B and C are valid approaches"], ans:3, exp:"Both column-level COMMENT (used during creation) and Unity Catalog TAGS (ALTER TABLE ... ALTER COLUMN ... SET TAGS) can mark PII. Tags are the preferred governance approach." },
-  { id:42, domain:5, q:"A data engineer dropped a managed Unity Catalog table but needs to recover it. Which approach works?", opts:["Run UNDROP TABLE","Restore from Delta time travel using RESTORE TABLE","Use DESCRIBE HISTORY and re-create the table","Managed table data cannot be recovered after DROP"], ans:3, exp:"Once a managed table is dropped in Unity Catalog, the data files are deleted. Unlike external tables, there is no recovery path. Always use external tables for critical data that may need recovery." },
+  { id:41, domain:5, q:"How can a data engineer tag a table column as containing PII data in Unity Catalog?", opts:["Using ALTER TABLE SET TBLPROPERTIES with a pii key","Using Unity Catalog tags (ALTER TABLE column SET TAGS)","Using COMMENT on column during CREATE TABLE","Both B and C are valid approaches"], ans:1, exp:"Unity Catalog TAGS (ALTER TABLE ... ALTER COLUMN ... SET TAGS) are the formal governance mechanism for classifying columns as PII. COMMENT is just free-text documentation, not a structured tagging feature." },
+  { id:42, domain:5, q:"A data engineer dropped a managed Unity Catalog table but needs to recover it. Which approach works?", opts:["Run UNDROP TABLE","Restore from Delta time travel using RESTORE TABLE","Use DESCRIBE HISTORY and re-create the table","Managed table data cannot be recovered after DROP"], ans:0, exp:"Unity Catalog supports UNDROP TABLE, which recovers a dropped managed table within a 7-day soft-delete retention window, restoring both metadata and data files." },
 
   // Mixed advanced questions
   { id:43, domain:2, q:"Which statement about COPY INTO vs Auto Loader is correct?", opts:["Auto Loader is better for large-scale continuous streaming ingestion; COPY INTO is better for one-time or occasional batch loads","COPY INTO supports streaming; Auto Loader does not","Both are exactly equivalent in all scenarios","COPY INTO uses Structured Streaming internally"], ans:0, exp:"COPY INTO is simpler for batch/one-time loads. Auto Loader scales better for continuous streaming with millions of files using directory listing or file notification mode." },
   { id:44, domain:3, q:"A Lakeflow pipeline uses EXPECT clause on a table. What happens to records violating the expectation when using 'on violation DROP ROW'?", opts:["The pipeline fails","Violating rows are quarantined in a separate table","Violating rows are silently dropped and metrics are tracked in the event log","The pipeline skips the entire batch"], ans:2, exp:"With 'on violation DROP ROW', violating records are dropped from the output. Data quality metrics (valid/invalid counts) are tracked in the pipeline event log." },
   { id:45, domain:4, q:"A data engineer wants to see which Databricks Workflows tasks share data. Which feature enables this?", opts:["Cluster logs","Task values (dbutils.jobs.taskValues)","Job output notebooks","dbutils.widgets"], ans:1, exp:"dbutils.jobs.taskValues.set() and .get() allow tasks within a Databricks Workflow to pass data between each other at runtime." },
+
+  // ─── NEW Domain 1: Databricks Intelligence Platform (5 questions) ───
+  { id:46, domain:1, q:"What is the purpose of cluster policies in Databricks?", opts:["To schedule job runs at specific times","To restrict and enforce cluster configuration settings for users, such as allowed instance types and max nodes","To define data access permissions on Delta tables","To configure network firewall rules for the workspace"], ans:1, exp:"Cluster policies let admins define rules that restrict cluster creation options (e.g., allowed instance types, autoscaling limits, tags), ensuring cost control and compliance." },
+  { id:47, domain:1, q:"A workspace admin wants to manage which users can create personal access tokens (PATs). Which permission level prevents a user from generating PATs?", opts:["CAN USE","CAN MANAGE","NO PERMISSIONS","READ ONLY"], ans:2, exp:"Users with NO PERMISSIONS on token management cannot create or use personal access tokens. CAN USE allows creating/using tokens; CAN MANAGE is for admins to manage all users' tokens." },
+  { id:48, domain:1, q:"Which Databricks feature allows data engineers to sync notebooks and project files with a remote Git repository directly from the workspace?", opts:["DBFS mounts","Databricks Repos (Git folders)","Delta Sharing","Databricks Connect"], ans:1, exp:"Databricks Repos (Git folders) integrate Git version control into the workspace, allowing users to clone, commit, push, pull, and manage branches for notebooks and files." },
+  { id:49, domain:1, q:"In Unity Catalog, what is the correct three-level namespace for referencing a table?", opts:["metastore.schema.table","workspace.database.table","catalog.schema.table","account.catalog.table"], ans:2, exp:"Unity Catalog uses a three-level namespace: catalog.schema.table (e.g., main.sales.orders). The metastore sits above catalogs but is not part of the object reference path." },
+  { id:50, domain:1, q:"Which objects in Unity Catalog sit directly under the metastore rather than inside a catalog?", opts:["Tables and views","Schemas and functions","Storage credentials and external locations","Notebooks and dashboards"], ans:2, exp:"Storage credentials, external locations, connections, and shares are metastore-level securables that sit directly under the metastore, not inside any catalog." },
+
+  // ─── NEW Domain 2: Development & Ingestion (13 questions) ───
+  { id:51, domain:2, q:"When Auto Loader encounters a new column in incoming data that was not in the original inferred schema, what happens by default (rescue mode)?", opts:["The stream fails with an UnknownFieldException","The new column is automatically added to the target table schema","The new column data is placed into the _rescued_data column as JSON","The new records are silently dropped"], ans:2, exp:"By default, Auto Loader uses rescue mode, placing unexpected or new column data into the _rescued_data column in JSON format rather than failing or evolving the schema." },
+  { id:52, domain:2, q:"Which Auto Loader option should be set to 'addNewColumns' to automatically evolve the schema when new fields appear in source files?", opts:["cloudFiles.format","cloudFiles.schemaLocation","cloudFiles.schemaEvolutionMode","cloudFiles.inferColumnTypes"], ans:2, exp:"Setting cloudFiles.schemaEvolutionMode to 'addNewColumns' causes Auto Loader to automatically add new columns to the schema when they appear in incoming data files." },
+  { id:53, domain:2, q:"What is the key difference between Auto Loader's directory listing mode and file notification mode?", opts:["Directory listing mode only works with JSON files; file notification works with all formats","Directory listing mode scans the input directory for new files; file notification uses cloud event subscriptions for better scalability with large directories","File notification mode is only available on AWS, not Azure or GCP","Directory listing mode requires a schema location; file notification does not"], ans:1, exp:"Directory listing mode periodically lists files in the directory. File notification mode sets up cloud-native event notifications (e.g., AWS SNS/SQS, Azure Event Grid) for scalable detection of new files in large directories." },
+  { id:54, domain:2, q:"A data engineer wants to enforce that incoming data must match an existing Delta table schema exactly, rejecting any writes with extra or mismatched columns. Which Delta Lake feature provides this?", opts:["Schema evolution","Schema enforcement (schema validation)","MERGE schema auto-merge","Rescue data column"], ans:1, exp:"Schema enforcement (also called schema validation) rejects writes that do not match the table's existing schema, preventing accidental schema corruption. It is enabled by default on Delta tables." },
+  { id:55, domain:2, q:"Which option enables automatic schema evolution during a MERGE INTO operation, allowing new columns from the source to be added to the target Delta table?", opts:["spark.databricks.delta.schema.autoMerge.enabled = true","MERGE INTO ... USING ... ON ... WITH SCHEMA EVOLUTION","ALTER TABLE target ADD COLUMNS (auto)","SET spark.sql.adaptive.enabled = true"], ans:0, exp:"Setting spark.databricks.delta.schema.autoMerge.enabled to true allows MERGE, INSERT, and UPDATE operations to automatically add new columns from the source to the target table." },
+  { id:56, domain:2, q:"In Structured Streaming, what does the trigger option Trigger.AvailableNow() do?", opts:["Processes one micro-batch then stops permanently","Processes all available data in incremental micro-batches then stops the stream","Continuously processes data with the lowest possible latency","Processes data once every 10 seconds"], ans:1, exp:"Trigger.AvailableNow() processes all currently available data in multiple micro-batches (respecting rate limits), then automatically stops. It replaces the deprecated Trigger.Once()." },
+  { id:57, domain:2, q:"What is the purpose of the foreachBatch sink in Structured Streaming?", opts:["To write streaming output to a console for debugging","To apply arbitrary batch DataFrame operations (such as MERGE) to the output of each streaming micro-batch","To trigger an external REST API call for each record","To partition streaming output into separate Delta tables by date"], ans:1, exp:"foreachBatch receives each micro-batch as a standard DataFrame along with its batch ID, allowing any batch operation (e.g., Delta MERGE, writes to non-streaming sinks like JDBC) within a single streaming query." },
+  { id:58, domain:2, q:"A data engineer writes a streaming query with .trigger(processingTime='30 seconds'). What does this configuration mean?", opts:["The query will stop after 30 seconds","Each micro-batch will take exactly 30 seconds to process","The system will check for and process new data every 30 seconds","Records older than 30 seconds will be dropped"], ans:2, exp:"Trigger.ProcessingTime('30 seconds') configures the streaming engine to initiate a new micro-batch every 30 seconds. If a batch takes longer, the next batch starts immediately after completion." },
+  { id:59, domain:2, q:"Which command allows a parent notebook to run a child notebook and receive its exit value in Databricks?", opts:["%run ./child_notebook","dbutils.notebook.run('./child_notebook', timeout_seconds=60)","import child_notebook","spark.run('child_notebook')"], ans:1, exp:"dbutils.notebook.run() executes a child notebook and returns its exit value (set via dbutils.notebook.exit()). %run includes the child inline but does not return a value programmatically." },
+  { id:60, domain:2, q:"When writing to a Delta table with .option('mergeSchema', 'true'), what happens?", opts:["The entire table schema is overwritten with the DataFrame's schema","New columns from the DataFrame are added to the existing table schema without removing existing columns","Data is merged using a primary key lookup","The DataFrame schema is forced to match the existing table schema exactly"], ans:1, exp:"The mergeSchema option adds new columns from the DataFrame to the existing table schema. It does not remove existing columns or overwrite the schema entirely (that would be overwriteSchema)." },
+  { id:61, domain:2, q:"What is the _rescued_data column in Auto Loader used for?", opts:["It stores a backup copy of every record for disaster recovery","It captures fields that do not match the inferred or provided schema, including type mismatches and unexpected columns","It logs Auto Loader performance metrics for each batch","It holds the checkpoint file paths for processed files"], ans:1, exp:"The _rescued_data column stores data that does not conform to the expected schema — such as new or unexpected columns and type mismatches — as a JSON string for later analysis." },
+  { id:62, domain:2, q:"Which cloudFiles.schemaEvolutionMode setting causes the streaming job to fail when new columns are detected, requiring manual schema updates?", opts:["rescue","addNewColumns","failOnNewColumns","none"], ans:2, exp:"With failOnNewColumns, Auto Loader throws an UnknownFieldException when new columns appear, forcing the data engineer to manually update the schema before restarting the stream." },
+  { id:63, domain:2, q:"A data engineer needs to write streaming data to both a Delta table and an external JDBC database in each micro-batch. Which approach should they use?", opts:["Chain two separate writeStream calls on the same DataFrame","Use foreachBatch to write the micro-batch DataFrame to both sinks within the same function","Use Trigger.AvailableNow() with two output modes","Use COPY INTO for the JDBC database"], ans:1, exp:"foreachBatch allows you to apply multiple write operations to each micro-batch DataFrame, enabling writes to multiple sinks (Delta table and JDBC) within a single streaming query." },
+
+  // ─── NEW Domain 3: Data Processing & Transformations (14 questions) ───
+  { id:64, domain:3, q:"Which SQL window function assigns a unique sequential integer to each row within a partition, with no gaps even for tied values?", opts:["RANK()","DENSE_RANK()","ROW_NUMBER()","NTILE()"], ans:2, exp:"ROW_NUMBER() assigns a unique sequential integer to each row within a partition. Unlike RANK() or DENSE_RANK(), it never produces duplicate or tied numbers." },
+  { id:65, domain:3, q:"What is the difference between RANK() and DENSE_RANK() window functions?", opts:["RANK() is for strings only; DENSE_RANK() is for numbers only","RANK() leaves gaps in ranking after ties (e.g., 1,1,3); DENSE_RANK() produces consecutive ranks without gaps (e.g., 1,1,2)","DENSE_RANK() requires a PARTITION BY clause; RANK() does not","There is no difference; they are aliases for each other"], ans:1, exp:"RANK() leaves gaps after ties (e.g., 1,1,3), while DENSE_RANK() produces consecutive ranks without gaps (e.g., 1,1,2). Both support PARTITION BY and ORDER BY." },
+  { id:66, domain:3, q:"Which Spark SQL higher-order function applies a lambda expression to transform each element of an array column?", opts:["explode()","collect_list()","transform()","flatten()"], ans:2, exp:"transform() is a higher-order function that applies a lambda expression to every element of an array, returning a new array of the same size. Example: transform(arr, x -> x + 1)." },
+  { id:67, domain:3, q:"What does the EXPLODE function do when applied to an array column in Spark SQL?", opts:["Combines multiple arrays into one","Creates a new row for each element in the array, expanding the result set","Counts the number of elements in the array","Converts the array into a JSON string"], ans:1, exp:"EXPLODE generates a new row for each element in the array (or each key-value pair in a map), effectively flattening nested array structures into individual rows." },
+  { id:68, domain:3, q:"A data engineer defines a Common Table Expression (CTE) using a WITH clause in SQL. Which statement about CTEs is correct?", opts:["CTEs are persisted as tables in the catalog and can be queried later","CTEs exist only for the duration of the single SQL statement in which they are defined","CTEs can be referenced across multiple separate SQL statements in the same notebook cell","CTEs automatically create indexes for faster query performance"], ans:1, exp:"A CTE (WITH clause) is a temporary named result set scoped to a single SQL statement. It is not persisted and cannot be referenced outside its defining query." },
+  { id:69, domain:3, q:"What is the key difference between CREATE TABLE AS SELECT (CTAS) and CREATE TEMPORARY VIEW in Databricks?", opts:["CTAS creates a persisted physical table with data stored on disk; a temporary view is a named query with no data materialized","CTAS creates a view; CREATE TEMPORARY VIEW creates a physical table","Both persist data but CTAS uses Parquet and the view uses Delta","There is no difference in behavior"], ans:0, exp:"CTAS materializes the query result into a physical table (stored as Delta by default). A temporary view is simply a named SQL query re-evaluated each time it is referenced, with no data stored." },
+  { id:70, domain:3, q:"How do you query a global temporary view in Databricks SQL?", opts:["SELECT * FROM my_global_view","SELECT * FROM global_temp.my_global_view","SELECT * FROM temp.my_global_view","SELECT * FROM session.my_global_view"], ans:1, exp:"Global temporary views are registered in the system-reserved global_temp database. You must prefix the view name with global_temp. to query it: SELECT * FROM global_temp.my_view." },
+  { id:71, domain:3, q:"Which SQL operation rotates row values into columns, creating a new column for each distinct value and applying an aggregate function?", opts:["UNPIVOT","LATERAL VIEW","PIVOT","CUBE"], ans:2, exp:"PIVOT rotates rows into columns by turning distinct values of a specified column into new column headers and applying an aggregate function (e.g., SUM, COUNT). UNPIVOT does the reverse." },
+  { id:72, domain:3, q:"What does the FLATTEN function do when applied to an array of arrays in Spark SQL?", opts:["Converts a struct into separate columns","Collapses a nested array of arrays into a single flat array","Drops null values from an array","Converts an array into a map"], ans:1, exp:"FLATTEN takes an array of arrays and merges them into a single-level array. For example, flatten(array(array(1,2), array(3,4))) returns [1,2,3,4]." },
+  { id:73, domain:3, q:"In Lakeflow Declarative Pipelines, what does the AUTO CDC INTO (formerly APPLY CHANGES INTO) statement do?", opts:["Applies schema changes to a table definition","Processes change data capture (CDC) feeds to maintain a target table with SCD Type 1 or Type 2 logic","Applies VACUUM to clean up old files","Changes the table owner in Unity Catalog"], ans:1, exp:"AUTO CDC INTO processes CDC feeds to automatically handle inserts, updates, and deletes on a target streaming table, supporting both SCD Type 1 (overwrite) and SCD Type 2 (history tracking)." },
+  { id:74, domain:3, q:"What is the difference between SCD Type 1 and SCD Type 2 when using AUTO CDC INTO in a Lakeflow pipeline?", opts:["SCD Type 1 keeps full history; SCD Type 2 keeps only the latest record","SCD Type 1 overwrites existing records with no history; SCD Type 2 preserves historical versions of changed records","SCD Type 1 is for inserts only; SCD Type 2 is for updates only","There is no difference; both maintain the same level of history"], ans:1, exp:"SCD Type 1 directly updates records in place (no history). SCD Type 2 inserts a new row for each change, preserving full history with start/end timestamps or version flags." },
+  { id:75, domain:3, q:"A data engineer registers a PySpark UDF using spark.udf.register('to_upper', lambda s: s.upper(), StringType()). How can this UDF be used in SQL?", opts:["It cannot be used in SQL; UDFs registered this way are DataFrame-only","SELECT to_upper(name) FROM my_table","SELECT UDF.to_upper(name) FROM my_table","SELECT pyspark.to_upper(name) FROM my_table"], ans:1, exp:"spark.udf.register() registers the function for use in Spark SQL. Once registered, it can be called directly by name in SQL queries: SELECT to_upper(name) FROM my_table." },
+  { id:76, domain:3, q:"Which statement about temporary views vs global temporary views in Databricks is correct?", opts:["Temporary views are visible across all clusters in the workspace","Global temporary views are scoped to the Spark application and accessible from any notebook attached to the same cluster","Temporary views persist after the session ends","Global temporary views are stored permanently in the Unity Catalog metastore"], ans:1, exp:"Temporary views are scoped to the current SparkSession (notebook). Global temporary views exist in the global_temp database and are visible to all sessions on the same cluster (Spark application), but are dropped when the application ends." },
+  { id:77, domain:3, q:"What does enabling Delta Lake Change Data Feed (CDF) on a table provide?", opts:["A way to stream CDC events from external databases into the Delta table","A record of row-level changes (inserts, updates, deletes) made to the Delta table, readable as a stream or batch query","An automatic merge operation for deduplication","A log of schema changes applied to the Delta table"], ans:1, exp:"Change Data Feed records row-level changes (_change_type, _commit_version, _commit_timestamp) to a Delta table, enabling downstream consumers to process only incremental changes rather than full table scans." },
+
+  // ─── NEW Domain 4: Productionizing Data Pipelines (8 questions) ───
+  { id:78, domain:4, q:"In Databricks Workflows, what type of graph structure represents task dependencies?", opts:["Circular dependency graph","Directed Acyclic Graph (DAG)","Binary tree","Linked list"], ans:1, exp:"Databricks Workflows represent task dependencies as a Directed Acyclic Graph (DAG), ensuring tasks execute in the correct order without circular dependencies." },
+  { id:79, domain:4, q:"A data engineer wants to send an email notification when a workflow job fails. Where is this configured?", opts:["In the notebook code using dbutils.notification.send()","In the job's notification settings under email or webhook alerts on failure","In the cluster configuration settings","In the Unity Catalog permissions page"], ans:1, exp:"Databricks Workflows supports configuring email and webhook notifications for job events (start, success, failure) in the job's settings, without requiring any code changes." },
+  { id:80, domain:4, q:"Which Databricks Workflows feature allows defining a condition that determines whether a downstream task should execute based on an expression?", opts:["If/else condition task (run_if conditions)","dbutils.widgets.get()","Cluster policies","EXPECT clause in DLT"], ans:0, exp:"Databricks Workflows supports If/else condition tasks that evaluate an expression to determine whether downstream tasks should run, enabling branching logic in job DAGs." },
+  { id:81, domain:4, q:"A data engineer deploying a Databricks Asset Bundle wants to check the configuration for errors without actually deploying. Which CLI command should they use?", opts:["databricks bundle deploy --dry-run","databricks bundle validate","databricks bundle test","databricks bundle check"], ans:1, exp:"'databricks bundle validate' checks the bundle YAML configuration for errors and validates resource definitions without deploying anything, making it ideal for CI/CD validation steps." },
+  { id:82, domain:4, q:"How can a data engineer programmatically monitor the health and progress of a Structured Streaming query in production?", opts:["Only by manually checking the Spark UI","Using query.lastProgress and query.status or attaching a StreamingQueryListener to track metrics","Streaming queries cannot be monitored programmatically","By examining DBFS log files only"], ans:1, exp:"query.lastProgress and query.status provide real-time metrics (input rate, processing rate, batch duration). StreamingQueryListener enables event-driven monitoring and alerting for production streaming jobs." },
+  { id:83, domain:4, q:"A Databricks Workflow has tasks A, B, and C where B depends on A, and C depends on both A and B. If task B fails, what happens to task C?", opts:["Task C runs anyway since task A succeeded","Task C is skipped because one of its upstream dependencies (B) failed","Task C runs with a warning flag","The entire workflow restarts from task A"], ans:1, exp:"By default, if any upstream dependency of a task fails, the dependent task is skipped. Since C depends on B and B failed, C will not execute. Use Repair and Rerun to retry the failed task." },
+  { id:84, domain:4, q:"Which task configuration option in Databricks Workflows specifies how many times a failed task should be automatically retried before marking it as permanently failed?", opts:["max_retries","retry_on_timeout only","There is no retry option; tasks always fail immediately","depends_on with a retry flag"], ans:0, exp:"Each task in a Databricks Workflow can be configured with max_retries (and min_retry_interval_millis) to automatically retry on failure, preventing transient errors from causing full workflow failures." },
+  { id:85, domain:4, q:"What does the 'databricks bundle deploy' CLI command do?", opts:["It creates a brand new Databricks workspace from scratch","It deploys the bundle's resources (jobs, pipelines, clusters) to the target environment defined in databricks.yml","It only uploads notebooks to the workspace without creating any job definitions","It deletes all existing resources and replaces them"], ans:1, exp:"'databricks bundle deploy' provisions or updates all resources defined in the bundle (jobs, pipelines, clusters, permissions) to the target workspace specified in the databricks.yml targets section." },
+
+  // ─── NEW Domain 5: Data Governance & Quality (5 questions) ───
+  { id:86, domain:5, q:"What is a dynamic view in Databricks Unity Catalog used for?", opts:["A view that automatically refreshes its underlying data every hour","A view that returns different data based on the querying user's identity or group membership, enabling row-level and column-level security","A view that dynamically adds new columns when source data changes","A materialized view that caches results for faster performance"], ans:1, exp:"Dynamic views use functions like current_user() and is_account_group_member() in their definitions to filter rows or mask columns based on who is querying, providing fine-grained access control." },
+  { id:87, domain:5, q:"Which Unity Catalog schema can a data engineer query to discover metadata about all tables, columns, and views within a catalog?", opts:["system.access.audit","information_schema","system.billing.usage","system.lineage.tables"], ans:1, exp:"Each catalog in Unity Catalog includes an information_schema that contains metadata views (tables, columns, views, etc.), following the SQL standard for discovering catalog objects." },
+  { id:88, domain:5, q:"A data engineer needs to apply a column mask so that only members of the 'finance' group can see the full salary values while others see NULL. Which approach is recommended in Unity Catalog?", opts:["Create a separate filtered table for each user group","Apply a column mask function using ALTER TABLE ... ALTER COLUMN ... SET MASK with a function that checks group membership","Use a GRANT statement with column-level SELECT permissions","Encrypt the salary column with a workspace-level encryption key"], ans:1, exp:"Column masks in Unity Catalog use SQL UDF functions applied via ALTER TABLE ... ALTER COLUMN ... SET MASK. The masking function checks the user's identity or group and returns the real value or a masked value." },
+  { id:89, domain:5, q:"What is a storage credential in Unity Catalog?", opts:["A username and password stored in a Databricks secret scope for database access","A securable object that encapsulates a long-term cloud credential (e.g., IAM role or service principal) granting access to cloud storage","A personal access token used for REST API authentication","A connection string for JDBC or ODBC databases"], ans:1, exp:"A storage credential is a Unity Catalog securable object that stores cloud provider credentials (AWS IAM role, Azure service principal, GCP service account) used to access cloud storage paths referenced by external locations." },
+  { id:90, domain:5, q:"What is the relationship between a storage credential and an external location in Unity Catalog?", opts:["They are the same object with different names","An external location defines a cloud storage path and references a storage credential that provides the permissions to access that path","A storage credential automatically creates external locations for all accessible paths","External locations are only used with managed tables, not external tables"], ans:1, exp:"An external location maps a specific cloud storage path (e.g., s3://bucket/path) to a storage credential. Together they allow Unity Catalog to govern access to data stored in external cloud object storage." },
 ];
 
-const QUIZ_SIZE = 45;
+const QUIZ_SIZE = 45; // Questions per quiz attempt (from 90 total)
+const GFORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfqxRncPqDw_R9vZTifxyemZ_bajwgha1ua9tPrgvbgmkrcBA/formResponse";
+const GFORM_FIELDS = { questionId: "entry.161244691", vote: "entry.1668645012", ip: "entry.766343008" };
+const GSHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSeuC4MCSsJxi1EpqkbGxod9o_cKroXQepqjsf9AjjBw6bDtW8l54Oc2Lyiee3_xP1u9IQVLbc6JvvG/pub?output=csv";
+
+let cachedIP = null;
+function getIP() {
+  if (cachedIP) return Promise.resolve(cachedIP);
+  return fetch("https://api.ipify.org?format=text")
+    .then(r => r.text())
+    .then(ip => { cachedIP = ip; return ip; })
+    .catch(() => "unknown");
+}
+
+function submitToGoogleForm(qId, vote) {
+  getIP().then(ip => {
+    const params = new URLSearchParams({
+      [GFORM_FIELDS.questionId]: String(qId),
+      [GFORM_FIELDS.vote]: vote,
+      [GFORM_FIELDS.ip]: ip,
+    });
+    fetch(`${GFORM_URL}?${params}`, { method: "POST", mode: "no-cors" }).catch(() => {});
+  });
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split("\n");
+  if (lines.length < 2) return [];
+  return lines.slice(1).map(line => {
+    const cols = line.split(",");
+    return { questionId: cols[1]?.replace(/"/g, "").trim(), vote: cols[2]?.replace(/"/g, "").trim() };
+  });
+}
 
 function shuffle(arr) {
   const a = [...arr];
@@ -83,7 +170,7 @@ function getDomainColor(id) {
 }
 
 export default function App() {
-  const [screen, setScreen] = useState("home"); // home | quiz | results
+  const [screen, setScreen] = useState("home"); // home | quiz | results | feedback
   const [mode, setMode] = useState("full"); // full | domain | quick
   const [selectedDomain, setSelectedDomain] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -92,12 +179,24 @@ export default function App() {
   const [revealed, setRevealed] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
+  const [submittedFeedback, setSubmittedFeedback] = useState({});
+  const [communityFeedback, setCommunityFeedback] = useState([]);
 
   useEffect(() => {
     if (!timerActive || timeLeft <= 0) return;
     const t = setTimeout(() => setTimeLeft(t => t - 1), 1000);
     return () => clearTimeout(t);
   }, [timerActive, timeLeft]);
+
+  // Fetch community feedback from published Google Sheet
+  const fetchCommunityFeedback = useCallback(() => {
+    fetch(`${GSHEET_CSV_URL}&_t=${Date.now()}`)
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(text => setCommunityFeedback(parseCSV(text)))
+      .catch(err => console.error("Failed to fetch community feedback:", err));
+  }, []);
+
+  useEffect(() => { fetchCommunityFeedback(); }, [fetchCommunityFeedback]);
 
   const startQuiz = (m, domId = null) => {
     setMode(m);
@@ -109,7 +208,7 @@ export default function App() {
     setAnswers({});
     setCurrent(0);
     setRevealed(false);
-    const secs = m === "quick" ? 600 : 5400;
+    const secs = m === "quick" ? 600 : m === "domain" ? 600 : 5400;
     setTimeLeft(secs);
     setTimerActive(true);
     setScreen("quiz");
@@ -138,6 +237,11 @@ export default function App() {
     if (!qs.length) return null;
     const correct = qs.filter(q => answers[q.id] === q.ans).length;
     return { correct, total: qs.length, pct: Math.round((correct / qs.length) * 100) };
+  };
+
+  const submitFeedback = (qId, vote) => {
+    submitToGoogleForm(qId, vote);
+    setSubmittedFeedback(prev => ({ ...prev, [qId]: vote }));
   };
 
   const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
@@ -208,9 +312,78 @@ export default function App() {
             </button>
           ))}
         </div>
+
+        {/* Feedback survey button */}
+        <div style={{ marginTop: 24, textAlign: "center" }}>
+          <button onClick={() => setScreen("feedback")} style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, padding: "14px 24px", cursor: "pointer", color: "#aab", fontSize: 14, transition: "all 0.2s" }}
+            onMouseEnter={e => e.currentTarget.style.background = "rgba(255,107,53,0.15)"}
+            onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.07)"}>
+            View Answer Feedback Survey ({communityFeedback.length} responses)
+          </button>
+        </div>
       </div>
     </div>
   );
+
+  if (screen === "feedback") {
+    // Aggregate community feedback per question
+    const communityStats = {};
+    communityFeedback.forEach(({ questionId, vote }) => {
+      if (!communityStats[questionId]) communityStats[questionId] = { correct: 0, incorrect: 0 };
+      if (vote === "correct") communityStats[questionId].correct++;
+      else if (vote === "incorrect") communityStats[questionId].incorrect++;
+    });
+    const totalCorrect = communityFeedback.filter(f => f.vote === "correct").length;
+    const totalIncorrect = communityFeedback.filter(f => f.vote === "incorrect").length;
+
+    return (
+      <div style={{ fontFamily: "'Segoe UI', sans-serif", minHeight: "100vh", background: "linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)", padding: "24px 16px" }}>
+        <div style={{ maxWidth: 700, margin: "0 auto" }}>
+          <button onClick={() => setScreen("home")} style={{ background: "none", border: "1px solid rgba(255,255,255,0.2)", color: "#aab", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontSize: 13, marginBottom: 20 }}>← Home</button>
+
+          <h2 style={{ color: "#fff", margin: "0 0 8px" }}>Community Feedback Survey</h2>
+          <p style={{ color: "#889", fontSize: 14, margin: "0 0 20px" }}>{communityFeedback.length} total responses from all users</p>
+
+          {/* Summary */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 24 }}>
+            <div style={{ background: "rgba(39,174,96,0.1)", border: "1px solid #27AE6040", borderRadius: 12, padding: 16, textAlign: "center" }}>
+              <div style={{ color: "#2ecc71", fontSize: 32, fontWeight: 900 }}>{totalCorrect}</div>
+              <div style={{ color: "#2ecc71", fontSize: 13 }}>Marked Correct</div>
+            </div>
+            <div style={{ background: "rgba(231,76,60,0.1)", border: "1px solid #E74C3C40", borderRadius: 12, padding: 16, textAlign: "center" }}>
+              <div style={{ color: "#e74c3c", fontSize: 32, fontWeight: 900 }}>{totalIncorrect}</div>
+              <div style={{ color: "#e74c3c", fontSize: 13 }}>Flagged Incorrect</div>
+            </div>
+          </div>
+
+          {/* Questions with votes */}
+          {ALL_QUESTIONS.filter(q => communityStats[q.id]).length > 0 && (
+            <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, padding: 20, marginBottom: 20 }}>
+              <h3 style={{ color: "#fff", margin: "0 0 16px", fontSize: 15 }}>VOTED QUESTIONS</h3>
+              {ALL_QUESTIONS.filter(q => communityStats[q.id]).map(q => {
+                const cs = communityStats[q.id];
+                const total = cs.correct + cs.incorrect;
+                const pct = Math.round((cs.incorrect / total) * 100);
+                return (
+                  <div key={q.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                    <span style={{ color: "#ccd", fontSize: 12, flex: 1 }}>Q{q.id}: {q.q.slice(0, 50)}...</span>
+                    <span style={{ fontSize: 12, flexShrink: 0, marginLeft: 8 }}>
+                      <span style={{ color: "#2ecc71" }}>{cs.correct}</span>
+                      <span style={{ color: "#889" }}> / </span>
+                      <span style={{ color: "#e74c3c" }}>{cs.incorrect}</span>
+                      {pct >= 50 && <span style={{ color: "#e74c3c", fontWeight: 700, marginLeft: 6 }}>({pct}% flagged)</span>}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <button onClick={fetchCommunityFeedback} style={{ width: "100%", background: "rgba(74,144,217,0.15)", border: "1px solid rgba(74,144,217,0.3)", borderRadius: 12, padding: "14px", color: "#4A90D9", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>Refresh Community Data</button>
+        </div>
+      </div>
+    );
+  }
 
   if (screen === "quiz") {
     const q = questions[current];
@@ -278,6 +451,20 @@ export default function App() {
                 <span style={{ color: isCorrect ? "#2ecc71" : "#e74c3c", fontWeight: 700, fontSize: 15 }}>{isCorrect ? "Correct!" : `Incorrect — Answer: ${String.fromCharCode(65 + q.ans)}`}</span>
               </div>
               <p style={{ color: "#ccd", fontSize: 14, margin: 0, lineHeight: 1.6 }}>{q.exp}</p>
+              {/* Feedback buttons */}
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ color: "#889", fontSize: 12 }}>Is this answer correct?</span>
+                {submittedFeedback[q.id] ? (
+                  <span style={{ color: submittedFeedback[q.id] === "correct" ? "#2ecc71" : "#e74c3c", fontSize: 12, fontWeight: 600 }}>
+                    {submittedFeedback[q.id] === "correct" ? "Marked correct" : "Flagged incorrect"}
+                  </span>
+                ) : (
+                  <>
+                    <button onClick={() => submitFeedback(q.id, "correct")} style={{ background: "rgba(39,174,96,0.2)", border: "1px solid #27AE6060", borderRadius: 8, padding: "4px 12px", cursor: "pointer", color: "#2ecc71", fontSize: 12, fontWeight: 600 }}>Yes</button>
+                    <button onClick={() => submitFeedback(q.id, "incorrect")} style={{ background: "rgba(231,76,60,0.2)", border: "1px solid #E74C3C60", borderRadius: 8, padding: "4px 12px", cursor: "pointer", color: "#e74c3c", fontSize: 12, fontWeight: 600 }}>No</button>
+                  </>
+                )}
+              </div>
             </div>
           )}
 
