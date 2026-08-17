@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Databricks DEA Master Cheatsheet — May 2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.55;background:#fff;color:#1a1a1a;padding:20px}
+h1{font-size:18px;font-weight:600;margin-bottom:3px}
+.subtitle{font-size:12px;color:#666;margin-bottom:14px}
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.nav-btn{padding:5px 12px;border-radius:20px;border:1.5px solid #ddd;background:#fff;font-size:11.5px;font-weight:500;cursor:pointer;transition:all .15s}
+.nav-btn:hover{background:#f5f5f5}
+.nav-btn.active{border-color:var(--sc);background:var(--sb);color:var(--st)}
+.section{display:none}.section.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.full{grid-column:1/-1}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.card{background:#fafafa;border:0.5px solid #e5e5e5;border-radius:10px;padding:13px;border-left:3px solid var(--sc)}
+.card h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--st);margin-bottom:8px}
+.card>p{font-size:12.5px;color:#444;margin-bottom:8px;line-height:1.6}
+ul.b{list-style:none;display:flex;flex-direction:column;gap:3px}
+ul.b li{font-size:12.5px;color:#333;padding-left:14px;position:relative}
+ul.b li::before{content:'›';position:absolute;left:0;color:var(--sc);font-weight:700}
+ul.b li strong{font-weight:600;color:#111}
+code{background:#efefef;border-radius:4px;padding:1px 5px;font-family:'SF Mono','Fira Code',monospace;font-size:11px;color:#c0392b}
+.cb{background:#1e1e2e;color:#cdd6f4;border-radius:8px;padding:10px 13px;font-family:'SF Mono','Fira Code',monospace;font-size:11px;line-height:1.8;margin-top:7px;overflow-x:auto;white-space:pre}
+.kw{color:#cba6f7}.fn{color:#89b4fa}.str{color:#a6e3a1}.cm{color:#6c7086;font-style:italic}.num{color:#fab387}.op{color:#89dceb}
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;margin-left:4px;vertical-align:middle}
+.hot{background:#fde8e8;color:#c0392b}.new{background:#e8f5e9;color:#27ae60}.chg{background:#fff3cd;color:#856404}
+.warn{background:#fff8e1;border:0.5px solid #f9a825;border-radius:6px;padding:7px 10px;font-size:12px;margin-top:8px}
+.warn strong{color:#e65100}
+.info{background:#e8f0fe;border:0.5px solid #90b8f8;border-radius:6px;padding:7px 10px;font-size:12px;margin-top:8px}
+.info strong{color:#1a56c4}
+.ok{background:#e8f5e9;border:0.5px solid #81c784;border-radius:6px;padding:7px 10px;font-size:12px;margin-top:8px}
+.ok strong{color:#2e7d32}
+table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:7px}
+th{background:#f0f0f0;padding:5px 8px;text-align:left;font-weight:600;border:0.5px solid #ddd}
+td{padding:5px 8px;border:0.5px solid #ddd;vertical-align:top}
+tr:nth-child(even) td{background:#fafafa}
+.tier{border-radius:8px;padding:11px}
+.t-b{background:#fdf6ec;border:0.5px solid #e0c9a0}
+.t-s{background:#f0f4f8;border:0.5px solid #aac0cc}
+.t-g{background:#eef8f0;border:0.5px solid #9ccfaa}
+.tier-title{font-weight:700;font-size:13px;margin-bottom:6px}
+/* audio */
+.audio-bar{display:flex;align-items:center;gap:10px;background:#f5f5f5;border:0.5px solid #e0e0e0;border-radius:10px;padding:10px 14px;margin-bottom:14px}
+.play-btn{flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1.5px solid var(--sc);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.play-btn:hover{background:var(--sb)}
+.play-btn svg{width:14px;height:14px;fill:var(--sc)}
+.audio-info{flex:1;min-width:0}
+.audio-title{font-size:11.5px;font-weight:600;color:#333;margin-bottom:5px}
+.seek-wrap{display:flex;align-items:center;gap:8px}
+.seek{-webkit-appearance:none;appearance:none;flex:1;height:4px;border-radius:2px;outline:none;cursor:pointer;background:linear-gradient(to right,var(--sc) var(--pct,0%),#ddd var(--pct,0%))}
+.seek::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--sc);border:2px solid #fff;box-shadow:0 0 0 1px var(--sc);cursor:pointer}
+.seek::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--sc);border:2px solid #fff;cursor:pointer}
+.time-label{font-size:10.5px;color:#888;white-space:nowrap;min-width:72px;text-align:right}
+.audio-err{font-size:11px;color:#c0392b;margin-top:4px;display:none}
+/* section colours */
+.s1{--sc:#6B4FA0;--sb:#F0EAFA;--st:#3d2a68}
+.s2{--sc:#0F6E56;--sb:#E1F5EE;--st:#085041}
+.s3{--sc:#1565C0;--sb:#E3F2FD;--st:#0d47a1}
+.s4{--sc:#BA7517;--sb:#FAEEDA;--st:#633806}
+.s5{--sc:#2E7D32;--sb:#E8F5E9;--st:#1b5e20}
+.s6{--sc:#C62828;--sb:#FFEBEE;--st:#7f0000}
+.s7{--sc:#37474F;--sb:#ECEFF1;--st:#102027}
+@media print{body{padding:8px}.nav{display:none}.audio-bar{display:none}.section{display:block!important}.section+.section{page-break-before:always}}
+</style>
+</head>
+<body>
+
+<h1>Databricks Certified Data Engineer Associate — Master Cheatsheet</h1>
+<div class="subtitle">May 2026 exam guide · 45 questions · 90 min · $200 · 7 sections · register at webassessor.com/databricks</div>
+
+<div class="nav">
+  <button class="nav-btn s1 active" onclick="show('s1',this)">1 · Platform 6%</button>
+  <button class="nav-btn s2" onclick="show('s2',this)">2 · Ingestion 21%</button>
+  <button class="nav-btn s3" onclick="show('s3',this)">3 · Transformation 22%</button>
+  <button class="nav-btn s4" onclick="show('s4',this)">4 · Lakeflow Jobs 16%</button>
+  <button class="nav-btn s5" onclick="show('s5',this)">5 · CI/CD 10%</button>
+  <button class="nav-btn s6" onclick="show('s6',this)">6 · Troubleshooting 10%</button>
+  <button class="nav-btn s7" onclick="show('s7',this)">7 · Governance 15%</button>
+</div>
+
+<!-- ===== S1 ===== -->
+<div id="s1" class="section s1 active">
+<div class="audio-bar">
+  <button class="play-btn" onclick="togglePlay('s1')" title="Play / Pause"><svg id="icon-s1" viewBox="0 0 16 16"><polygon points="3,1 14,8 3,15"/></svg></button>
+  <div class="audio-info">
+    <div class="audio-title">Section 1 — Databricks Intelligence Platform (6%)</div>
+    <div class="seek-wrap">
+      <input type="range" class="seek" id="seek-s1" min="0" max="100" value="0" step="0.1" oninput="onSeek('s1',this.value)" style="--pct:0%">
+      <span class="time-label" id="time-s1">0:00 / 0:00</span>
+    </div>
+    <div class="audio-err" id="err-s1">Place <code>audio/section1.mp3</code> next to this file.</div>
+  </div>
+  <audio id="aud-s1" src="audio/section1.mp3" preload="metadata" ontimeupdate="onTick('s1')" onloadedmetadata="onMeta('s1')" onended="onEnd('s1')" onerror="onErr('s1')"></audio>
+</div>
+<div class="grid">
+
+<div class="card full">
+  <h3>Platform architecture — control plane vs data plane</h3>
+  <p>Databricks splits into two planes. The <strong>control plane</strong> (Databricks-managed) hosts the UI, REST API, job scheduler, cluster manager, and Unity Catalog metastore. The <strong>data plane</strong> (customer cloud) is where compute runs — driver, workers, DBFS, and data sources. Customer data never leaves the data plane.</p>
+  <div class="two">
+    <table>
+      <tr><th>Component</th><th>Plane</th></tr>
+      <tr><td>Web UI / REST API</td><td>Control</td></tr>
+      <tr><td>Job scheduler</td><td>Control</td></tr>
+      <tr><td>Cluster manager</td><td>Control</td></tr>
+      <tr><td>Unity Catalog metastore</td><td>Control</td></tr>
+      <tr><td>Driver node</td><td>Data</td></tr>
+      <tr><td>Worker nodes / executors</td><td>Data</td></tr>
+      <tr><td>DBFS root storage</td><td>Data</td></tr>
+      <tr><td>JDBC / external data sources</td><td>Data</td></tr>
+    </table>
+    <div>
+      <ul class="b">
+        <li><strong>Driver node</strong> — orchestrates tasks; hosts SparkContext; runs driver program</li>
+        <li><strong>Worker / executors</strong> — execute tasks; hold partition data in memory</li>
+        <li><strong>Secure cluster connectivity</strong> — outbound-only; no open inbound ports needed</li>
+        <li><strong>Serverless</strong> — Databricks manages compute in their cloud account; data plane boundary shifts</li>
+        <li><strong>Delta Lake</strong> — ACID on object storage; time travel; schema enforcement; batch + streaming on same table</li>
+        <li><strong>Unity Catalog</strong> — unified governance for all data, analytics, and AI assets across workspaces</li>
+      </ul>
+      <div class="warn"><strong>Exam trap:</strong> The web application = control plane. The driver node = data plane. This is the single most common distractor in Section 1 questions.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Compute types — select the right option <span class="badge hot">sample Q4</span></h3>
+  <p>The exam gives a workload scenario and asks you to pick the best compute. Key differentiators are startup time, concurrency support, cost model, and whether config is managed by you or Databricks.</p>
+  <table>
+    <tr><th>Type</th><th>Best for</th><th>Startup</th><th>Cost model</th><th>Key trait</th></tr>
+    <tr><td>All-purpose cluster</td><td>Interactive dev, notebooks, ad-hoc</td><td>2–5 min</td><td>DBU including idle time</td><td>Manually started/stopped; shared</td></tr>
+    <tr><td>Job cluster</td><td>Automated scheduled ETL jobs</td><td>2–5 min</td><td>DBU only during job run</td><td>Terminates on completion</td></tr>
+    <tr><td>High-concurrency cluster</td><td>Multiple simultaneous SQL users</td><td>2–5 min</td><td>DBU; autoscale</td><td>Preemption; table ACLs; ideal for BI teams</td></tr>
+    <tr><td>SQL Warehouse (Classic)</td><td>SQL analytics, BI dashboards</td><td>~1 min</td><td>DBU; auto-suspend on idle</td><td>SQL-only; size XS → 4XL</td></tr>
+    <tr><td>SQL Warehouse (Serverless)</td><td>BI with instant start</td><td>Seconds</td><td>DBU; scales to zero</td><td>No cluster config; fastest startup</td></tr>
+    <tr><td>Serverless (Jobs/Pipelines)</td><td>ETL jobs, Lakeflow pipelines</td><td>Seconds</td><td>DBU; scales to zero</td><td>Managed infra; no cluster config</td></tr>
+    <tr><td>Cluster pool</td><td>Reduce job startup latency</td><td>Seconds (from pool)</td><td>DBU for idle instances</td><td>Pre-warms VMs; does NOT run code</td></tr>
+    <tr><td>Single-node</td><td>Small data, pandas, single-machine ML</td><td>2–3 min</td><td>DBU (driver only)</td><td>No workers; driver handles everything</td></tr>
+  </table>
+  <div class="info"><strong>Sample Q4 answer — C:</strong> Multiple simultaneous SQL users + fast startup + autoscale + cost control = High-concurrency cluster with autoscaling. A job cluster is for scheduled ETL, not ad-hoc multi-user SQL.</div>
+</div>
+
+<div class="card">
+  <h3>Delta Lake core features</h3>
+  <ul class="b">
+    <li><strong>ACID transactions</strong> — serialisable isolation; concurrent reads/writes safe</li>
+    <li><strong>Time travel</strong> — query any past version by version number or timestamp</li>
+    <li><strong>Schema enforcement</strong> — rejects writes that don't match table schema (default on)</li>
+    <li><strong>Schema evolution</strong> — opt-in via <code>mergeSchema</code>; adds new columns safely</li>
+    <li><strong>Change Data Feed (CDF)</strong> — row-level change tracking; powers CDC pipelines</li>
+    <li><strong>Unified batch + streaming</strong> — same Delta table works for both without conversion</li>
+    <li><strong>Open format</strong> — Parquet files + Delta log; readable by Spark, Trino, Athena</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>Databricks Lakehouse platform value</h3>
+  <ul class="b">
+    <li>Combines data lake (scale, openness) + data warehouse (ACID, performance) in one platform</li>
+    <li>Single platform for SQL, Python, Scala, R, ML, and streaming</li>
+    <li><strong>Lakeflow family:</strong> Lakeflow Connect (ingest) → Lakeflow Spark Declarative Pipelines (transform) → Lakeflow Jobs (orchestrate)</li>
+    <li>Declarative Automation Bundles (DABs) — formerly Databricks Asset Bundles — for CI/CD</li>
+    <li>Partner Connect — integrate BI/ETL tools (Tableau, dbt, Fivetran, Power BI)</li>
+  </ul>
+  <div class="warn"><strong>Exam trap:</strong> "Real-time notebook collaboration" = workspace feature. "Unified batch and streaming" = Delta Lake feature. Don't mix these categories.</div>
+</div>
+
+</div>
+</div>
+
+<!-- ===== S2 ===== -->
+<div id="s2" class="section s2">
+<div class="audio-bar">
+  <button class="play-btn" onclick="togglePlay('s2')" title="Play / Pause"><svg id="icon-s2" viewBox="0 0 16 16"><polygon points="3,1 14,8 3,15"/></svg></button>
+  <div class="audio-info">
+    <div class="audio-title">Section 2 — Data Ingestion and Loading (21%)</div>
+    <div class="seek-wrap">
+      <input type="range" class="seek" id="seek-s2" min="0" max="100" value="0" step="0.1" oninput="onSeek('s2',this.value)" style="--pct:0%">
+      <span class="time-label" id="time-s2">0:00 / 0:00</span>
+    </div>
+    <div class="audio-err" id="err-s2">Place <code>audio/section2.mp3</code> next to this file.</div>
+  </div>
+  <audio id="aud-s2" src="audio/section2.mp3" preload="metadata" ontimeupdate="onTick('s2')" onloadedmetadata="onMeta('s2')" onended="onEnd('s2')" onerror="onErr('s2')"></audio>
+</div>
+<div class="grid">
+
+<div class="card full">
+  <h3>Ingestion method selection guide <span class="badge hot">high frequency</span></h3>
+  <p>The exam asks you to choose between ingestion methods based on data volume, frequency, source type, and governance requirements. All methods must land data into Unity Catalog-governed tables.</p>
+  <table>
+    <tr><th>Method</th><th>Source type</th><th>Best for</th><th>UC governed?</th><th>Mode</th></tr>
+    <tr><td>Auto Loader</td><td>Files in cloud storage (S3/ADLS/GCS)</td><td>Continuous high-volume file landing; schema evolution</td><td>Yes</td><td>Streaming micro-batch</td></tr>
+    <tr><td>COPY INTO</td><td>Files in cloud storage</td><td>Idempotent ad-hoc or one-time batch loads</td><td>Yes</td><td>SQL batch</td></tr>
+    <tr><td>Lakeflow Connect (standard)</td><td>SaaS/enterprise APIs (Salesforce, ServiceNow)</td><td>Managed no-code connector ingestion</td><td>Yes</td><td>Scheduled / incremental</td></tr>
+    <tr><td>Lakeflow Connect (managed)</td><td>Partner/custom connectors</td><td>Diverse enterprise sources with governance</td><td>Yes</td><td>Scheduled / incremental</td></tr>
+    <tr><td>JDBC/ODBC in notebook</td><td>Relational DBs (PostgreSQL, MySQL, SQL Server)</td><td>Direct DB reads; usually scheduled via Lakeflow Jobs</td><td>Yes (write to UC)</td><td>Batch</td></tr>
+    <tr><td>REST clients in notebook</td><td>HTTP APIs</td><td>API-based data pulls; orchestrated via Jobs</td><td>Yes (write to UC)</td><td>Batch</td></tr>
+    <tr><td>Partner connectors</td><td>Third-party ETL tools (Fivetran, dbt)</td><td>Enterprise ETL with existing tooling</td><td>Yes</td><td>Varies</td></tr>
+  </table>
+  <div class="info"><strong>Decision rule:</strong> Continuous files → Auto Loader. One-time/ad-hoc files → COPY INTO. SaaS APIs → Lakeflow Connect. Relational DB → JDBC. Need high governance + volume → Lakeflow Connect managed connectors.</div>
+</div>
+
+<div class="card full">
+  <h3>Auto Loader — complete syntax <span class="badge hot">high frequency</span></h3>
+  <p>Auto Loader is the primary tool for continuously ingesting new files from cloud storage into UC-governed Delta tables. It uses the <code>cloudFiles</code> format and guarantees exactly-once processing via checkpointing. Two detection modes: <strong>directory listing</strong> (default — polls folder) and <strong>file notification</strong> (event-driven via cloud pub/sub — scales to millions of files).</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm"># Auto Loader — streaming ingest to UC table</span>
+df = (spark.readStream
+  .<span class="fn">format</span>(<span class="str">"cloudFiles"</span>)
+
+  <span class="cm"># required</span>
+  .<span class="fn">option</span>(<span class="str">"cloudFiles.format"</span>, <span class="str">"json"</span>)
+  .<span class="fn">option</span>(<span class="str">"cloudFiles.schemaLocation"</span>, <span class="str">"/chk/schema"</span>)
+
+  <span class="cm"># schema enforcement / evolution</span>
+  .<span class="fn">option</span>(<span class="str">"mergeSchema"</span>, <span class="str">"true"</span>)
+  .<span class="fn">option</span>(<span class="str">"cloudFiles.schemaEvolutionMode"</span>, <span class="str">"addNewColumns"</span>)
+  .<span class="fn">option</span>(<span class="str">"rescuedDataColumn"</span>, <span class="str">"_rescued"</span>)
+
+  <span class="cm"># file notification mode (high volume)</span>
+  .<span class="fn">option</span>(<span class="str">"cloudFiles.useNotifications"</span>, <span class="str">"true"</span>)
+
+  <span class="cm"># throttle per micro-batch</span>
+  .<span class="fn">option</span>(<span class="str">"cloudFiles.maxFilesPerTrigger"</span>, <span class="num">1000</span>)
+  .<span class="fn">option</span>(<span class="str">"cloudFiles.maxBytesPerTrigger"</span>, <span class="str">"10g"</span>)
+
+  .<span class="fn">load</span>(<span class="str">"/landing/events/"</span>)
+)
+
+(df.writeStream
+  .<span class="fn">option</span>(<span class="str">"checkpointLocation"</span>, <span class="str">"/chk/events"</span>)
+  .<span class="fn">trigger</span>(availableNow=<span class="op">True</span>)     <span class="cm"># batch-like; preferred</span>
+  .<span class="fn">outputMode</span>(<span class="str">"append"</span>)
+  .<span class="fn">option</span>(<span class="str">"mergeSchema"</span>, <span class="str">"true"</span>)
+  .<span class="fn">table</span>(<span class="str">"catalog.bronze.events"</span>)  <span class="cm"># UC-governed table</span>
+)</div>
+    </div>
+    <div>
+      <table>
+        <tr><th>Option</th><th>Notes</th></tr>
+        <tr><td><code>cloudFiles.format</code></td><td>json, csv, parquet, avro, orc, text, binaryFile</td></tr>
+        <tr><td><code>cloudFiles.schemaLocation</code></td><td>Required for inference; persists schema across restarts</td></tr>
+        <tr><td><code>mergeSchema</code></td><td>true = add new cols; false = strict (default)</td></tr>
+        <tr><td><code>cloudFiles.schemaEvolutionMode</code></td><td>addNewColumns | rescue | failOnNewColumns | none</td></tr>
+        <tr><td><code>cloudFiles.useNotifications</code></td><td>true = event-driven (SNS/SQS, Event Grid); false = polling</td></tr>
+        <tr><td><code>rescuedDataColumn</code></td><td>Captures malformed / extra fields that don't fit schema</td></tr>
+        <tr><td><code>cloudFiles.includeExistingFiles</code></td><td>true = process pre-existing files too; false = new only</td></tr>
+      </table>
+      <div class="warn"><strong>Exam trap:</strong> Without <code>schemaLocation</code>, schema is re-inferred from the first file on every restart — breaks on schema drift. Always set it when using schema inference.</div>
+      <div class="info"><strong>Batch modes (exam language):</strong> "Directory listing" = polls the cloud folder. "File notification" = cloud event (SNS/SQS on AWS, Event Grid on Azure). File notification is more scalable for millions of files but requires cloud setup.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>COPY INTO — idempotent batch loads</h3>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm">-- COPY INTO: idempotent SQL batch load to UC table</span>
+<span class="kw">COPY INTO</span> catalog.bronze.raw_events
+<span class="kw">FROM</span> (
+  <span class="kw">SELECT</span>
+    _metadata.file_name              <span class="kw">AS</span> source_file,
+    _metadata.file_modification_time <span class="kw">AS</span> ingest_time,
+    *
+  <span class="kw">FROM</span> <span class="str">'/landing/events/'</span>
+)
+<span class="kw">FILEFORMAT</span> = JSON
+<span class="kw">FORMAT_OPTIONS</span> (
+  <span class="str">'multiLine'</span>          = <span class="str">'true'</span>,
+  <span class="str">'ignoreCorruptFiles'</span> = <span class="str">'true'</span>
+)
+<span class="kw">COPY_OPTIONS</span> (
+  <span class="str">'mergeSchema'</span> = <span class="str">'true'</span>,
+  <span class="str">'force'</span> = <span class="str">'false'</span>  <span class="cm">-- false = idempotent; true = reload all</span>
+);</div>
+    </div>
+    <div>
+      <table>
+        <tr><th></th><th>Auto Loader</th><th>COPY INTO</th></tr>
+        <tr><td>API</td><td>Python/Scala streaming</td><td>SQL command</td></tr>
+        <tr><td>Mode</td><td>Streaming micro-batch</td><td>Batch (SQL)</td></tr>
+        <tr><td>Scale</td><td>Billions of files</td><td>Thousands of files</td></tr>
+        <tr><td>Schema</td><td>Auto-infer + evolve</td><td>Manual or inherit target</td></tr>
+        <tr><td>Idempotency</td><td>Via checkpoint dir</td><td>Tracks loaded files internally</td></tr>
+        <tr><td>Reprocess all</td><td>Delete checkpoint</td><td>Set <code>force=true</code></td></tr>
+        <tr><td>Best for</td><td>Continuous file landing</td><td>Ad-hoc / one-time loads</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Lakeflow Connect — managed ingestion <span class="badge new">exam focus</span></h3>
+  <p>Lakeflow Connect provides managed connector-based ingestion. It removes the need to write custom ingestion code for common enterprise sources, handles schema mapping, incremental loads, and error recovery, and writes directly to UC-governed Delta tables.</p>
+  <div class="two">
+    <div>
+      <ul class="b">
+        <li><strong>Standard connectors</strong> — pre-built connectors for major SaaS sources (Salesforce, ServiceNow, Google Analytics, Workday, etc.)</li>
+        <li><strong>Managed connectors</strong> — partner-maintained; broader catalog of enterprise sources</li>
+        <li>Configured and monitored via Databricks UI or API</li>
+        <li>All data lands in UC-governed Delta tables — no manual schema management</li>
+        <li>Handles incremental loads automatically — tracks watermarks or change tokens</li>
+        <li>Orchestrated and scheduled via Lakeflow Jobs</li>
+        <li>Replaces custom JDBC + scheduling code for many common source types</li>
+      </ul>
+    </div>
+    <div>
+      <table>
+        <tr><th>Choose Lakeflow Connect when…</th></tr>
+        <tr><td>Source is a well-known SaaS app (Salesforce, ServiceNow)</td></tr>
+        <tr><td>You need governance out of the box without custom code</td></tr>
+        <tr><td>Ingestion frequency is daily/hourly — not sub-minute</td></tr>
+        <tr><td>Semi-structured/JSON data from enterprise APIs</td></tr>
+        <tr><td>You need reliable incremental loads with error handling managed for you</td></tr>
+      </table>
+      <table style="margin-top:8px">
+        <tr><th>Choose JDBC/REST in notebook when…</th></tr>
+        <tr><td>Source is a relational database with custom SQL needed</td></tr>
+        <tr><td>You need full control over query logic and transformation</td></tr>
+        <tr><td>Lakeflow Connect doesn't support the source</td></tr>
+        <tr><td>Schedule via Lakeflow Jobs on top</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>JDBC / REST ingestion in notebooks</h3>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm"># JDBC: read from relational DB into DataFrame</span>
+jdbc_url = <span class="str">"jdbc:postgresql://host:5432/mydb"</span>
+df = (spark.read
+  .<span class="fn">format</span>(<span class="str">"jdbc"</span>)
+  .<span class="fn">option</span>(<span class="str">"url"</span>, jdbc_url)
+  .<span class="fn">option</span>(<span class="str">"dbtable"</span>, <span class="str">"public.orders"</span>)
+  .<span class="fn">option</span>(<span class="str">"user"</span>, dbutils.secrets.<span class="fn">get</span>(<span class="str">"scope"</span>,<span class="str">"user"</span>))
+  .<span class="fn">option</span>(<span class="str">"password"</span>, dbutils.secrets.<span class="fn">get</span>(<span class="str">"scope"</span>,<span class="str">"pw"</span>))
+  .<span class="fn">option</span>(<span class="str">"numPartitions"</span>, <span class="num">8</span>)
+  .<span class="fn">option</span>(<span class="str">"partitionColumn"</span>, <span class="str">"order_id"</span>)
+  .<span class="fn">option</span>(<span class="str">"lowerBound"</span>, <span class="num">1</span>)
+  .<span class="fn">option</span>(<span class="str">"upperBound"</span>, <span class="num">1000000</span>)
+  .<span class="fn">load</span>()
+)
+<span class="cm"># Write to UC-governed Delta table</span>
+df.<span class="fn">write</span>.<span class="fn">mode</span>(<span class="str">"overwrite"</span>).<span class="fn">saveAsTable</span>(<span class="str">"catalog.bronze.orders"</span>)</div>
+    </div>
+    <div>
+      <div class="cb"><span class="cm"># REST API ingestion</span>
+<span class="kw">import</span> requests
+token = dbutils.secrets.<span class="fn">get</span>(<span class="str">"scope"</span>, <span class="str">"api-token"</span>)
+resp  = requests.<span class="fn">get</span>(
+  <span class="str">"https://api.example.com/v1/records"</span>,
+  headers={<span class="str">"Authorization"</span>: <span class="str">f"Bearer {token}"</span>},
+  params={<span class="str">"page"</span>: <span class="num">1</span>, <span class="str">"limit"</span>: <span class="num">500</span>}
+)
+data = resp.<span class="fn">json</span>()[<span class="str">"results"</span>]
+
+<span class="cm"># Convert to Spark DataFrame and write to UC</span>
+df = spark.<span class="fn">createDataFrame</span>(data)
+df.<span class="fn">write</span>.<span class="fn">mode</span>(<span class="str">"append"</span>).<span class="fn">saveAsTable</span>(<span class="str">"catalog.bronze.api_records"</span>)</div>
+      <div class="info"><strong>JDBC parallelism:</strong> Use <code>numPartitions</code> + <code>partitionColumn</code> + <code>lowerBound</code>/<code>upperBound</code> for parallel reads. Without these, Spark reads the entire table with one connection — very slow for large tables.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ===== S3 ===== -->
+<div id="s3" class="section s3">
+<div class="audio-bar">
+  <button class="play-btn" onclick="togglePlay('s3')" title="Play / Pause"><svg id="icon-s3" viewBox="0 0 16 16"><polygon points="3,1 14,8 3,15"/></svg></button>
+  <div class="audio-info">
+    <div class="audio-title">Section 3 — Data Transformation and Modeling (22%)</div>
+    <div class="seek-wrap">
+      <input type="range" class="seek" id="seek-s3" min="0" max="100" value="0" step="0.1" oninput="onSeek('s3',this.value)" style="--pct:0%">
+      <span class="time-label" id="time-s3">0:00 / 0:00</span>
+    </div>
+    <div class="audio-err" id="err-s3">Place <code>audio/section3.mp3</code> next to this file.</div>
+  </div>
+  <audio id="aud-s3" src="audio/section3.mp3" preload="metadata" ontimeupdate="onTick('s3')" onloadedmetadata="onMeta('s3')" onended="onEnd('s3')" onerror="onErr('s3')"></audio>
+</div>
+<div class="grid">
+
+<div class="card full">
+  <h3>Bronze → Silver cleaning pattern <span class="badge hot">high frequency</span></h3>
+  <p>The Silver layer transforms raw Bronze data: clean nulls, standardise types, deduplicate, and write to a new UC-governed table. This is the most commonly tested ETL pattern.</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm"># Read bronze, clean, write silver</span>
+<span class="kw">from</span> pyspark.sql.functions <span class="kw">import</span> (
+  col, to_date, to_timestamp, trim, upper, lower,
+  when, coalesce, lit, regexp_replace,
+  count, count_distinct, avg, sum, mean,
+  approx_count_distinct
+)
+
+bronze = spark.<span class="fn">table</span>(<span class="str">"catalog.bronze.orders"</span>)
+
+silver = (bronze
+  <span class="cm"># standardise data types</span>
+  .<span class="fn">withColumn</span>(<span class="str">"order_date"</span>, <span class="fn">to_date</span>(col(<span class="str">"order_date_str"</span>)))
+  .<span class="fn">withColumn</span>(<span class="str">"amount"</span>,     col(<span class="str">"amount"</span>).<span class="fn">cast</span>(<span class="str">"double"</span>))
+  .<span class="fn">withColumn</span>(<span class="str">"status"</span>,     <span class="fn">upper</span>(<span class="fn">trim</span>(col(<span class="str">"status"</span>))))
+
+  <span class="cm"># clean nulls</span>
+  .<span class="fn">fillna</span>({<span class="str">"amount"</span>: <span class="num">0.0</span>, <span class="str">"country"</span>: <span class="str">"UNKNOWN"</span>})
+  .<span class="fn">dropna</span>(subset=[<span class="str">"order_id"</span>, <span class="str">"order_date"</span>])
+
+  <span class="cm"># deduplicate</span>
+  .<span class="fn">dropDuplicates</span>([<span class="str">"order_id"</span>])
+
+  <span class="cm"># filter invalid rows</span>
+  .<span class="fn">filter</span>(col(<span class="str">"amount"</span>) > <span class="num">0</span>)
+)
+
+(silver.<span class="fn">write</span>
+  .<span class="fn">mode</span>(<span class="str">"overwrite"</span>)
+  .<span class="fn">option</span>(<span class="str">"overwriteSchema"</span>, <span class="str">"true"</span>)
+  .<span class="fn">saveAsTable</span>(<span class="str">"catalog.silver.orders"</span>))</div>
+    </div>
+    <div>
+      <div class="cb"><span class="cm"># Aggregations (Gold layer)</span>
+gold = (silver
+  .<span class="fn">groupBy</span>(<span class="str">"order_date"</span>, <span class="str">"country"</span>)
+  .<span class="fn">agg</span>(
+    <span class="fn">sum</span>(<span class="str">"amount"</span>).<span class="fn">alias</span>(<span class="str">"total_revenue"</span>),
+    <span class="fn">count</span>(<span class="str">"order_id"</span>).<span class="fn">alias</span>(<span class="str">"order_count"</span>),
+    <span class="fn">count_distinct</span>(<span class="str">"customer_id"</span>).<span class="fn">alias</span>(<span class="str">"unique_customers"</span>),
+    <span class="fn">approx_count_distinct</span>(<span class="str">"customer_id"</span>).<span class="fn">alias</span>(<span class="str">"approx_unique"</span>),
+    <span class="fn">avg</span>(<span class="str">"amount"</span>).<span class="fn">alias</span>(<span class="str">"avg_order_value"</span>),
+    <span class="fn">mean</span>(<span class="str">"amount"</span>).<span class="fn">alias</span>(<span class="str">"mean_value"</span>)
+  )
+)
+
+<span class="cm"># summary() equivalent in Spark</span>
+silver.<span class="fn">summary</span>().<span class="fn">show</span>()         <span class="cm"># count/mean/std/min/max/pct</span>
+silver.<span class="fn">describe</span>(<span class="str">"amount"</span>).<span class="fn">show</span>()</div>
+      <div class="warn"><strong>Exam trap:</strong> <code>count("col")</code> counts non-null rows. <code>count_distinct("col")</code> counts unique values. <code>approx_count_distinct</code> is a fast probabilistic alternative — used when exact count isn't required. These three appear as distractors in the same question.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>DataFrame operations — joins, columns, rows <span class="badge hot">high frequency</span></h3>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="kw">from</span> pyspark.sql.functions <span class="kw">import</span> broadcast, explode, split
+
+<span class="cm"># Join types</span>
+a.<span class="fn">join</span>(b, <span class="str">"id"</span>, <span class="str">"inner"</span>)          <span class="cm"># matching rows only</span>
+a.<span class="fn">join</span>(b, <span class="str">"id"</span>, <span class="str">"left"</span>)           <span class="cm"># all a; matched b</span>
+a.<span class="fn">join</span>(b, [<span class="str">"id"</span>,<span class="str">"date"</span>], <span class="str">"inner"</span>) <span class="cm"># multiple keys</span>
+a.<span class="fn">join</span>(<span class="fn">broadcast</span>(b_small), <span class="str">"id"</span>)   <span class="cm"># broadcast; no shuffle</span>
+a.<span class="fn">crossJoin</span>(b)                      <span class="cm"># cartesian product</span>
+a.<span class="fn">join</span>(b, <span class="str">"id"</span>, <span class="str">"left_semi"</span>)      <span class="cm"># a rows where match exists</span>
+a.<span class="fn">join</span>(b, <span class="str">"id"</span>, <span class="str">"left_anti"</span>)      <span class="cm"># a rows with NO match</span>
+
+<span class="cm"># Union</span>
+a.<span class="fn">union</span>(b)          <span class="cm"># by position; allows dupes</span>
+a.<span class="fn">unionAll</span>(b)       <span class="cm"># alias for union (same behaviour)</span>
+a.<span class="fn">unionByName</span>(b)    <span class="cm"># by column name; safer</span>
+
+<span class="cm"># Column operations</span>
+df.<span class="fn">withColumn</span>(<span class="str">"full_name"</span>, concat(col(<span class="str">"first"</span>),<span class="fn">lit</span>(<span class="str">" "</span>),col(<span class="str">"last"</span>)))
+df.<span class="fn">withColumnRenamed</span>(<span class="str">"old"</span>, <span class="str">"new"</span>)
+df.<span class="fn">drop</span>(<span class="str">"col_to_remove"</span>)
+df.<span class="fn">select</span>(<span class="str">"id"</span>, <span class="str">"amount"</span>, col(<span class="str">"status"</span>).<span class="fn">alias</span>(<span class="str">"state"</span>))
+
+<span class="cm"># Split and explode arrays</span>
+df.<span class="fn">withColumn</span>(<span class="str">"tags"</span>, <span class="fn">split</span>(col(<span class="str">"tag_str"</span>), <span class="str">","</span>))
+df.<span class="fn">withColumn</span>(<span class="str">"tag"</span>, <span class="fn">explode</span>(col(<span class="str">"tags"</span>)))   <span class="cm"># one row per element</span>
+
+<span class="cm"># Filter rows</span>
+df.<span class="fn">filter</span>(col(<span class="str">"amount"</span>) > <span class="num">0</span>)
+df.<span class="fn">filter</span>((col(<span class="str">"status"</span>)==<span class="str">"ACTIVE"</span>) & (col(<span class="str">"amount"</span>)><span class="num">100</span>))</div>
+    </div>
+    <div>
+      <div class="cb"><span class="kw">from</span> pyspark.sql <span class="kw">import</span> Window
+<span class="kw">from</span> pyspark.sql.functions <span class="kw">import</span> rank, row_number, lag, lead
+
+<span class="cm"># Deduplication</span>
+df.<span class="fn">distinct</span>()
+df.<span class="fn">dropDuplicates</span>([<span class="str">"order_id"</span>])
+
+<span class="cm"># Window-based dedup: keep latest row per order_id</span>
+w = Window.<span class="fn">partitionBy</span>(<span class="str">"order_id"</span>).<span class="fn">orderBy</span>(col(<span class="str">"updated_at"</span>).<span class="fn">desc</span>())
+df.<span class="fn">withColumn</span>(<span class="str">"rn"</span>, <span class="fn">row_number</span>().<span class="fn">over</span>(w)).<span class="fn">filter</span>(col(<span class="str">"rn"</span>)==<span class="num">1</span>)
+
+<span class="cm"># Window functions</span>
+w2 = Window.<span class="fn">partitionBy</span>(<span class="str">"dept"</span>).<span class="fn">orderBy</span>(col(<span class="str">"salary"</span>).<span class="fn">desc</span>())
+df.<span class="fn">withColumn</span>(<span class="str">"rank"</span>,     <span class="fn">rank</span>().<span class="fn">over</span>(w2))
+  .<span class="fn">withColumn</span>(<span class="str">"prev_sal"</span>, <span class="fn">lag</span>(<span class="str">"salary"</span>,<span class="num">1</span>).<span class="fn">over</span>(w2))
+  .<span class="fn">withColumn</span>(<span class="str">"next_sal"</span>, <span class="fn">lead</span>(<span class="str">"salary"</span>,<span class="num">1</span>).<span class="fn">over</span>(w2))
+
+<span class="cm"># Repartition vs coalesce</span>
+df.<span class="fn">repartition</span>(<span class="num">200</span>)               <span class="cm"># full shuffle; increase partitions</span>
+df.<span class="fn">repartition</span>(<span class="num">10</span>, col(<span class="str">"country"</span>)) <span class="cm"># shuffle by col</span>
+df.<span class="fn">coalesce</span>(<span class="num">1</span>)                    <span class="cm"># reduce; no shuffle</span>
+
+<span class="cm"># Conditional</span>
+df.<span class="fn">withColumn</span>(<span class="str">"tier"</span>,
+  <span class="fn">when</span>(col(<span class="str">"score"</span>)>=<span class="num">90</span>, <span class="str">"gold"</span>)
+  .<span class="fn">when</span>(col(<span class="str">"score"</span>)>=<span class="num">70</span>, <span class="str">"silver"</span>)
+  .<span class="fn">otherwise</span>(<span class="str">"bronze"</span>))</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Basic tuning parameters <span class="badge hot">exam guide explicit</span></h3>
+  <p>The exam guide specifically names these four Spark config parameters. You need to know what each controls and when to change it.</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm"># The 4 tuning params named in the exam guide</span>
+
+<span class="cm"># 1. Shuffle partitions (default: 200)</span>
+<span class="cm">#    Controls output partitions after a shuffle (join/groupBy)</span>
+<span class="cm">#    Too low = large tasks + OOM. Too high = tiny tasks + overhead</span>
+spark.conf.<span class="fn">set</span>(<span class="str">"spark.sql.shuffle.partitions"</span>, <span class="str">"400"</span>)
+
+<span class="cm"># 2. Default parallelism</span>
+<span class="cm">#    Controls RDD operations (not DataFrame). Rule: 2-3× cores</span>
+spark.conf.<span class="fn">set</span>(<span class="str">"spark.default.parallelism"</span>, <span class="str">"200"</span>)
+
+<span class="cm"># 3. Executor + driver memory</span>
+<span class="cm">#    Set at cluster config time (not at runtime)</span>
+<span class="cm">#    OOM errors → increase executor memory or reduce data per task</span>
+<span class="cm">#    spark.executor.memory  e.g. "8g"</span>
+<span class="cm">#    spark.driver.memory    e.g. "4g"</span>
+
+<span class="cm"># 4. Broadcast join threshold (default: 10MB)</span>
+<span class="cm">#    Tables smaller than this are auto-broadcast (no shuffle)</span>
+spark.conf.<span class="fn">set</span>(<span class="str">"spark.sql.autoBroadcastJoinThreshold"</span>, <span class="str">"100m"</span>)
+
+<span class="cm"># After changing: re-run and measure with Spark UI or .explain()</span>
+df.<span class="fn">explain</span>(<span class="str">"formatted"</span>)  <span class="cm"># check plan changed as expected</span></div>
+    </div>
+    <div>
+      <table>
+        <tr><th>Parameter</th><th>Default</th><th>Tune when</th></tr>
+        <tr><td><code>spark.sql.shuffle.partitions</code></td><td>200</td><td>Large dataset = increase. Small dataset = decrease. AQE can auto-tune this.</td></tr>
+        <tr><td><code>spark.default.parallelism</code></td><td>Cluster cores</td><td>RDD-based jobs; set to 2–3× total executor cores</td></tr>
+        <tr><td><code>spark.executor.memory</code></td><td>1g</td><td>OOM errors on workers; spill to disk; set at cluster config time</td></tr>
+        <tr><td><code>spark.driver.memory</code></td><td>1g</td><td>OOM on driver; large collect() calls; set at cluster config time</td></tr>
+        <tr><td><code>spark.sql.autoBroadcastJoinThreshold</code></td><td>10MB</td><td>Raise if a lookup table is slightly above 10MB and you want broadcast join</td></tr>
+      </table>
+      <div class="info"><strong>AQE (Adaptive Query Execution)</strong> — enabled by default in DBR 7.3+. Automatically coalesces small shuffle partitions, handles skewed joins, and dynamically switches join strategies. Overrides <code>shuffle.partitions</code> at runtime.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Gold layer objects — materialized views, views, streaming tables, tables <span class="badge hot">high frequency</span></h3>
+  <p>The exam asks you to select the right Gold layer object for a BI or analytics use case. Each type has different freshness, compute, and governance characteristics.</p>
+  <table>
+    <tr><th>Object type</th><th>How defined</th><th>Data stored?</th><th>Freshness</th><th>Best for</th></tr>
+    <tr><td><strong>Table</strong></td><td>CREATE TABLE / CTAS / write</td><td>Yes — Delta files</td><td>On explicit write</td><td>Fully aggregated, periodically refreshed Gold data</td></tr>
+    <tr><td><strong>View</strong></td><td>CREATE VIEW AS SELECT …</td><td>No — re-computed each query</td><td>Always current</td><td>Logical abstraction; simple filters; row-level security</td></tr>
+    <tr><td><strong>Materialized View</strong></td><td>In Lakeflow pipeline</td><td>Yes — Delta files</td><td>On pipeline refresh (auto or manual)</td><td>Pre-computed aggregations; faster BI queries; auto-refresh</td></tr>
+    <tr><td><strong>Streaming Table</strong></td><td>In Lakeflow pipeline with streaming source</td><td>Yes — Delta files; incremental</td><td>Near real-time / incremental</td><td>Continuously updating aggregations; event-driven dashboards</td></tr>
+  </table>
+  <div class="two" style="margin-top:8px">
+    <div class="cb"><span class="cm">-- Create a view (no data stored)</span>
+<span class="kw">CREATE OR REPLACE VIEW</span> catalog.gold.v_daily_revenue
+<span class="kw">AS SELECT</span> order_date,
+  <span class="fn">SUM</span>(amount) <span class="kw">AS</span> total_revenue
+<span class="kw">FROM</span> catalog.silver.orders
+<span class="kw">GROUP BY</span> order_date;
+
+<span class="cm">-- Create a Gold table (data stored; run on schedule)</span>
+<span class="kw">CREATE OR REPLACE TABLE</span> catalog.gold.daily_revenue
+<span class="kw">AS SELECT</span> order_date,
+  <span class="fn">SUM</span>(amount) <span class="kw">AS</span> total_revenue,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> customer_id) <span class="kw">AS</span> customers
+<span class="kw">FROM</span> catalog.silver.orders
+<span class="kw">GROUP BY</span> order_date;</div>
+    <div class="cb"><span class="cm">-- Materialized view in Lakeflow pipeline (SQL)</span>
+<span class="kw">CREATE OR REFRESH MATERIALIZED VIEW</span>
+  catalog.gold.daily_revenue_mv
+<span class="kw">AS SELECT</span> order_date,
+  <span class="fn">SUM</span>(amount)               <span class="kw">AS</span> total_revenue,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> customer_id) <span class="kw">AS</span> customers
+<span class="kw">FROM</span> catalog.silver.orders
+<span class="kw">GROUP BY</span> order_date;
+
+<span class="cm">-- Streaming table in Lakeflow pipeline</span>
+<span class="kw">CREATE OR REFRESH STREAMING TABLE</span>
+  catalog.gold.live_events
+<span class="kw">AS SELECT</span> * <span class="kw">FROM</span> STREAM(catalog.silver.events)
+<span class="kw">WHERE</span> event_type = <span class="str">'purchase'</span>;</div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Lakeflow Declarative Pipelines — transformation layer <span class="badge chg">in Section 3</span></h3>
+  <p>Lakeflow Declarative Pipelines (formerly Delta Live Tables) is the managed ETL framework for building Silver and Gold transformation layers. You declare tables in SQL or Python; Databricks manages execution order, retries, data quality, and lineage. It is classified under <strong>Data Transformation</strong> in the May 2026 exam guide.</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm">-- SQL: streaming live table (bronze ingest)</span>
+<span class="kw">CREATE OR REFRESH STREAMING LIVE TABLE</span> bronze_raw
+COMMENT <span class="str">"Raw events"</span>
+<span class="kw">AS SELECT</span> _metadata.file_name <span class="kw">AS</span> source_file,
+  current_timestamp() <span class="kw">AS</span> ingest_time, *
+<span class="kw">FROM</span> cloud_files(<span class="str">'/landing/'</span>, <span class="str">'json'</span>,
+  map(<span class="str">'cloudFiles.schemaLocation'</span>,<span class="str">'/chk'</span>));
+
+<span class="cm">-- SQL: live table with expectations (silver)</span>
+<span class="kw">CREATE OR REFRESH LIVE TABLE</span> silver_orders (
+  <span class="kw">CONSTRAINT</span> valid_amount
+    <span class="kw">EXPECT</span> (amount > <span class="num">0</span>) <span class="kw">ON VIOLATION DROP ROW</span>,
+  <span class="kw">CONSTRAINT</span> has_customer
+    <span class="kw">EXPECT</span> (customer_id <span class="kw">IS NOT NULL</span>)
+    <span class="kw">ON VIOLATION FAIL UPDATE</span>
+)
+<span class="kw">AS SELECT</span> * <span class="kw">FROM</span> LIVE.bronze_raw <span class="kw">WHERE</span> amount > <span class="num">0</span>;
+
+<span class="cm">-- SQL: materialized view (gold)</span>
+<span class="kw">CREATE OR REFRESH MATERIALIZED VIEW</span> gold_revenue
+<span class="kw">AS SELECT</span> order_date,
+  <span class="fn">SUM</span>(amount) <span class="kw">AS</span> total
+<span class="kw">FROM</span> LIVE.silver_orders
+<span class="kw">GROUP BY</span> order_date;</div>
+    </div>
+    <div>
+      <table>
+        <tr><th>Expectation mode</th><th>On violation</th></tr>
+        <tr><td><code>EXPECT</code></td><td>Track in metrics; keep rows</td></tr>
+        <tr><td><code>EXPECT … DROP ROW</code></td><td>Discard violating rows; continue pipeline</td></tr>
+        <tr><td><code>EXPECT … FAIL UPDATE</code></td><td>Stop entire pipeline run</td></tr>
+      </table>
+      <table style="margin-top:8px">
+        <tr><th>Key concept</th><th>Detail</th></tr>
+        <tr><td><code>LIVE.</code> prefix</td><td>References other tables in the same pipeline</td></tr>
+        <tr><td>Streaming live table</td><td>Incremental; processes only new records</td></tr>
+        <tr><td>Live table</td><td>Full refresh each pipeline run</td></tr>
+        <tr><td>Materialized view</td><td>Pre-computed; auto-refreshed by pipeline</td></tr>
+        <tr><td>Pipeline event log</td><td>Quality metrics, expectation results, lineage</td></tr>
+        <tr><td>Development mode</td><td>Verbose logs; faster iteration</td></tr>
+        <tr><td>Production mode</td><td>Optimised for reliability; no verbose logs</td></tr>
+      </table>
+      <div class="info"><strong>Data quality checks:</strong> Expectations are the declarative quality mechanism in Lakeflow pipelines. For regular Delta tables outside pipelines, use <code>CHECK</code> constraints (<code>ALTER TABLE t ADD CONSTRAINT chk CHECK (amount &gt; 0)</code>) — these are enforced on write and cause errors on violation.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Delta Lake DDL / DML — essential syntax</h3>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm">-- Create</span>
+<span class="kw">CREATE OR REPLACE TABLE</span> t (
+  id <span class="kw">STRING</span>, dt <span class="kw">DATE</span>, v <span class="kw">DOUBLE</span>
+) <span class="kw">USING DELTA CLUSTER BY</span> (id);    <span class="cm">-- Liquid Clustering</span>
+<span class="kw">CREATE TABLE IF NOT EXISTS</span> t (...);
+<span class="kw">CREATE TABLE</span> t2 <span class="kw">AS SELECT</span> * <span class="kw">FROM</span> t; <span class="cm">-- CTAS</span>
+
+<span class="cm">-- DML</span>
+<span class="kw">INSERT INTO</span> t <span class="kw">VALUES</span> (<span class="str">'a1'</span>,<span class="str">'2024-01-01'</span>,<span class="num">100.0</span>);
+<span class="kw">INSERT OVERWRITE</span> t <span class="kw">SELECT</span> * <span class="kw">FROM</span> staging;
+<span class="kw">UPDATE</span> t <span class="kw">SET</span> v = v*<span class="num">1.1</span> <span class="kw">WHERE</span> dt=<span class="str">'2024-01-01'</span>;
+<span class="kw">DELETE FROM</span> t <span class="kw">WHERE</span> dt < <span class="str">'2023-01-01'</span>;
+
+<span class="cm">-- MERGE (upsert + CDC)</span>
+<span class="kw">MERGE INTO</span> silver.orders t
+<span class="kw">USING</span> bronze.raw s <span class="kw">ON</span> t.order_id = s.order_id
+<span class="kw">WHEN MATCHED AND</span> s.op=<span class="str">'DELETE'</span> <span class="kw">THEN DELETE</span>
+<span class="kw">WHEN MATCHED THEN UPDATE SET</span> *
+<span class="kw">WHEN NOT MATCHED THEN INSERT</span> *;</div>
+    </div>
+    <div>
+      <div class="cb"><span class="cm">-- Time travel</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> t <span class="kw">VERSION AS OF</span> <span class="num">5</span>;
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> t@v5;
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> t <span class="kw">TIMESTAMP AS OF</span> <span class="str">'2024-06-01'</span>;
+<span class="kw">RESTORE TABLE</span> t <span class="kw">TO VERSION AS OF</span> <span class="num">3</span>;
+
+<span class="cm">-- Maintenance</span>
+<span class="kw">OPTIMIZE</span> t;
+<span class="kw">OPTIMIZE</span> t <span class="kw">ZORDER BY</span> (country, dt);
+<span class="kw">ALTER TABLE</span> t <span class="kw">CLUSTER BY</span> (country, dt); <span class="cm">-- Liquid</span>
+<span class="kw">VACUUM</span> t RETAIN <span class="num">168</span> HOURS;
+
+<span class="cm">-- Inspect</span>
+<span class="kw">DESCRIBE TABLE EXTENDED</span> t;
+<span class="kw">DESCRIBE DETAIL</span> t;   <span class="cm">-- file stats, location, type</span>
+<span class="kw">DESCRIBE HISTORY</span> t;  <span class="cm">-- all versions + operations</span></div>
+      <div class="warn"><strong>OPTIMIZE vs VACUUM:</strong> OPTIMIZE compacts files but keeps old versions — time travel still works. VACUUM permanently deletes old files past the retention period — time travel past that point becomes impossible. Default retention = 7 days (168 hours).</div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- ===== S4 ===== -->
+<div id="s4" class="section s4">
+<div class="audio-bar">
+  <button class="play-btn" onclick="togglePlay('s4')" title="Play / Pause"><svg id="icon-s4" viewBox="0 0 16 16"><polygon points="3,1 14,8 3,15"/></svg></button>
+  <div class="audio-info">
+    <div class="audio-title">Section 4 — Working with Lakeflow Jobs (16%)</div>
+    <div class="seek-wrap">
+      <input type="range" class="seek" id="seek-s4" min="0" max="100" value="0" step="0.1" oninput="onSeek('s4',this.value)" style="--pct:0%">
+      <span class="time-label" id="time-s4">0:00 / 0:00</span>
+    </div>
+    <div class="audio-err" id="err-s4">Place <code>audio/section4.mp3</code> next to this file.</div>
+  </div>
+  <audio id="aud-s4" src="audio/section4.mp3" preload="metadata" ontimeupdate="onTick('s4')" onloadedmetadata="onMeta('s4')" onended="onEnd('s4')" onerror="onErr('s4')"></audio>
+</div>
+<div class="grid">
+
+<div class="card full">
+  <h3>Lakeflow Jobs — task types and DAG <span class="badge hot">high frequency</span></h3>
+  <p>Lakeflow Jobs is the native orchestrator. Tasks are wired into a DAG via <code>depends_on</code>. The exam tests task configuration, dependency logic, retry behaviour, and trigger types.</p>
+  <div class="two">
+    <div>
+      <table>
+        <tr><th>Task type</th><th>Use when</th></tr>
+        <tr><td>Notebook</td><td>ETL logic written in Databricks notebooks</td></tr>
+        <tr><td>SQL query</td><td>SQL transformations on a SQL warehouse</td></tr>
+        <tr><td>Dashboard</td><td>Refresh a Databricks SQL dashboard on schedule</td></tr>
+        <tr><td>Lakeflow Pipeline</td><td>Trigger a Lakeflow Declarative Pipeline run</td></tr>
+        <tr><td>Python script</td><td>Modular Python code in Repos/workspace</td></tr>
+        <tr><td>Python wheel</td><td>Packaged library with defined entry point</td></tr>
+        <tr><td>JAR</td><td>Compiled Scala/Java Spark jobs</td></tr>
+        <tr><td>dbt</td><td>dbt models and tests</td></tr>
+        <tr><td>Run job</td><td>Reuse another existing job as a sub-task</td></tr>
+      </table>
+      <div class="ok" style="margin-top:8px"><strong>DAG patterns:</strong> Linear = A→B→C. Fan-out = A→[B,C,D] parallel. Fan-in = [A,B]→C (both must succeed). Diamond = fan-out + fan-in combined. All wired with <code>depends_on</code> lists.</div>
+    </div>
+    <div>
+      <div class="cb"><span class="cm"># Pass values between tasks</span>
+<span class="cm"># Upstream task:</span>
+dbutils.jobs.taskValues.<span class="fn">set</span>(key=<span class="str">"row_count"</span>, value=<span class="num">12345</span>)
+
+<span class="cm"># Downstream task:</span>
+count = dbutils.jobs.taskValues.<span class="fn">get</span>(
+  taskKey=<span class="str">"ingest_bronze"</span>,
+  key=<span class="str">"row_count"</span>,
+  default=<span class="num">0</span>
+)
+
+<span class="cm"># Conditional task (run_if)</span>
+<span class="cm"># ALL_SUCCESS (default)</span>
+<span class="cm"># AT_LEAST_ONE_SUCCESS</span>
+<span class="cm"># NONE_FAILED</span>
+<span class="cm"># AT_LEAST_ONE_FAILED  ← run a cleanup on failure</span>
+<span class="cm"># ALL_DONE             ← always run (e.g. notification)</span>
+
+<span class="cm"># Retry policy (per task)</span>
+<span class="cm"># max_retries: 3</span>
+<span class="cm"># min_retry_interval_millis: 60000 (1 min)</span>
+<span class="cm"># retry_on_timeout: true</span>
+
+<span class="cm"># Repair & rerun (after failure)</span>
+<span class="cm"># Re-runs ONLY the failed task + downstream dependents</span>
+<span class="cm"># Successfully completed tasks are NOT re-run</span></div>
+      <div class="warn"><strong>Exam trap:</strong> "Repair run" re-executes from the failed task only — not the full job from the start. Choosing "re-run entire job" is always wrong for recovery/efficiency questions.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Trigger types and scheduling <span class="badge hot">exam guide explicit</span></h3>
+  <p>The exam asks you to choose the right trigger type based on how data arrives and pipeline dependencies. Three trigger types are explicitly named in the exam guide.</p>
+  <div class="two">
+    <div>
+      <table>
+        <tr><th>Trigger type</th><th>How it fires</th><th>Choose when</th></tr>
+        <tr><td><strong>Scheduled (time-based)</strong></td><td>Cron expression — runs at fixed intervals (hourly, daily, etc.)</td><td>Data arrives on a predictable schedule; SLAs measured by clock time</td></tr>
+        <tr><td><strong>File arrival</strong></td><td>Polls a cloud storage path; fires when new files are detected</td><td>Data volume is unpredictable; want event-driven not polling; batch files land asynchronously</td></tr>
+        <tr><td><strong>Table update</strong></td><td>Fires when a specific UC Delta table is updated</td><td>Pipeline depends on an upstream job writing a table; data-driven dependency between jobs</td></tr>
+      </table>
+      <div class="info"><strong>Time-based vs data-driven:</strong> Time-based triggers are simple and predictable but can waste compute when data hasn't arrived. Data-driven triggers (file arrival, table update) are more efficient — they fire only when data is ready.</div>
+    </div>
+    <div>
+      <div class="cb"><span class="cm"># Cron schedule example (Quartz format)</span>
+<span class="cm"># "0 0 6 * * ?"  = 6:00 AM every day</span>
+<span class="cm"># "0 0/30 * * * ?" = every 30 minutes</span>
+<span class="cm"># "0 0 8 ? * MON-FRI" = 8 AM weekdays</span>
+
+<span class="cm"># File arrival trigger</span>
+<span class="cm"># Set in Lakeflow Jobs UI:</span>
+<span class="cm"># Trigger type: File arrival</span>
+<span class="cm"># Storage location: s3://bucket/landing/events/</span>
+
+<span class="cm"># Table update trigger</span>
+<span class="cm"># Trigger type: Table update</span>
+<span class="cm"># Table: catalog.silver.orders</span>
+
+<span class="cm"># Control flow: branching example</span>
+<span class="cm"># Task A finishes → check row_count value</span>
+count = dbutils.jobs.taskValues.<span class="fn">get</span>(<span class="str">"taskA"</span>,<span class="str">"row_count"</span>,<span class="num">0</span>)
+<span class="kw">if</span> count == <span class="num">0</span>:
+  dbutils.notebook.<span class="fn">exit</span>(<span class="str">"skip"</span>)  <span class="cm"># signal to skip downstream</span>
+
+<span class="cm"># Looping: use a For Each task in Lakeflow Jobs UI</span>
+<span class="cm"># Iterates over a list of values, running a task for each</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Control flow — retries, branching, looping</h3>
+  <ul class="b">
+    <li><strong>Retries</strong> — set <code>max_retries</code> per task; use <code>retry_on_timeout=true</code> for flaky network ops; configure backoff with <code>min_retry_interval_millis</code></li>
+    <li><strong>Conditional tasks</strong> — use <code>run_if</code> to run a task only when upstream succeeded / failed / always</li>
+    <li><strong>Branching</strong> — notebook exits with a value; downstream tasks check <code>taskValues</code> to decide path</li>
+    <li><strong>For each task</strong> — built-in Lakeflow Jobs UI feature; iterates a task over a list of inputs</li>
+    <li><strong>Timeout</strong> — <code>timeout_seconds</code> per task or per job; auto-cancels overrunning runs</li>
+    <li><strong>Max concurrent runs</strong> — prevents overlapping scheduled runs on the same job</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>Job monitoring with Lakeflow Jobs UI</h3>
+  <ul class="b">
+    <li><strong>Run history view</strong> — compare current execution times against historical baselines; spot duration trends</li>
+    <li><strong>DAG-based task graph</strong> — visually see upstream blockers; identify which task caused a cascade failure</li>
+    <li><strong>Job statuses</strong> — Pending / Running / Succeeded / Failed / Cancelled / Skipped</li>
+    <li><strong>Pipeline run times and failure rates</strong> — track SLA compliance over time</li>
+    <li><strong>Task-level logs</strong> — driver log, stderr, stdout accessible per task run</li>
+    <li><strong>Notifications</strong> — email / webhook / PagerDuty on success or failure</li>
+  </ul>
+</div>
+
+</div>
+</div>
+
+<!-- ===== S5 ===== -->
+<div id="s5" class="section s5">
+<div class="audio-bar">
+  <button class="play-btn" onclick="togglePlay('s5')" title="Play / Pause"><svg id="icon-s5" viewBox="0 0 16 16"><polygon points="3,1 14,8 3,15"/></svg></button>
+  <div class="audio-info">
+    <div class="audio-title">Section 5 — Implementing CI/CD (10%)</div>
+    <div class="seek-wrap">
+      <input type="range" class="seek" id="seek-s5" min="0" max="100" value="0" step="0.1" oninput="onSeek('s5',this.value)" style="--pct:0%">
+      <span class="time-label" id="time-s5">0:00 / 0:00</span>
+    </div>
+    <div class="audio-err" id="err-s5">Place <code>audio/section5.mp3</code> next to this file.</div>
+  </div>
+  <audio id="aud-s5" src="audio/section5.mp3" preload="metadata" ontimeupdate="onTick('s5')" onloadedmetadata="onMeta('s5')" onended="onEnd('s5')" onerror="onErr('s5')"></audio>
+</div>
+<div class="grid">
+
+<div class="card full">
+  <h3>Declarative Automation Bundles (DABs) <span class="badge chg">renamed from Asset Bundles</span> <span class="badge hot">sample Q5</span></h3>
+  <p>Declarative Automation Bundles (formerly Databricks Asset Bundles) package jobs, pipelines, notebooks, and configs as YAML code in Git. They enable repeatable CI/CD deployments across dev, test, and prod environments. Sample Q5 confirms DABs are the correct answer for "modular, versioned, Git-promoted ETL pipelines."</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm"># Databricks CLI commands</span>
+databricks bundle init            <span class="cm"># scaffold project</span>
+databricks bundle validate        <span class="cm"># check YAML syntax</span>
+databricks bundle deploy          <span class="cm"># deploy to default target</span>
+databricks bundle deploy --target prod
+databricks bundle run my_job      <span class="cm"># trigger a run</span>
+databricks bundle run my_pipeline
+databricks bundle destroy         <span class="cm"># remove all resources</span>
+databricks bundle summary         <span class="cm"># list deployed resources</span>
+
+<span class="cm"># databricks.yml — minimal structure</span>
+bundle:
+  name: sales_pipeline
+
+variables:
+  env:
+    default: dev
+  cluster_size:
+    default: Standard_D4s_v3
+
+targets:
+  dev:
+    mode: development       <span class="cm"># adds [dev username] prefix</span>
+    default: true
+    workspace:
+      host: https://adb-dev.azuredatabricks.net
+  test:
+    mode: development
+    workspace:
+      host: https://adb-test.azuredatabricks.net
+  prod:
+    mode: production        <span class="cm"># no prefix; strict permissions</span>
+    workspace:
+      host: https://adb-prod.azuredatabricks.net</div>
+    </div>
+    <div>
+      <div class="cb">resources:
+  jobs:
+    daily_etl:
+      name: <span class="str">"Daily ETL (${var.env})"</span>
+      schedule:
+        quartz_cron_expression: <span class="str">"0 0 6 * * ?"</span>
+        timezone_id: <span class="str">"UTC"</span>
+      job_clusters:
+        - job_cluster_key: main
+          new_cluster:
+            spark_version: <span class="str">"15.4.x-scala2.12"</span>
+            node_type_id: <span class="str">"${var.cluster_size}"</span>
+            num_workers: <span class="num">4</span>
+      tasks:
+        - task_key: ingest
+          job_cluster_key: main
+          notebook_task:
+            notebook_path: ./notebooks/01_bronze
+            base_parameters:
+              env: <span class="str">"${var.env}"</span>
+        - task_key: transform
+          depends_on: [{task_key: ingest}]
+          pipeline_task:
+            pipeline_id: <span class="str">"${resources.pipelines.silver.id}"</span>
+
+  pipelines:
+    silver:
+      name: <span class="str">"Silver Pipeline (${var.env})"</span>
+      libraries:
+        - notebook: {path: ./pipelines/silver_dlt}</div>
+      <div class="warn"><strong>dev vs production mode:</strong> In <code>development</code> mode, all resource names are prefixed with <code>[dev username]</code> to prevent collisions with prod resources. In <code>production</code> mode, names are used exactly as defined.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Git Folders (formerly Repos) — branch workflow</h3>
+  <p>Git Folders in the Databricks workspace UI provide Git integration for notebooks and code. The exam tests creating branches, committing, pushing, and creating pull requests — all from within the Databricks workspace UI.</p>
+  <div class="two">
+    <div>
+      <ul class="b">
+        <li><strong>Create branch</strong> — Git Folders UI → branch dropdown → "Create branch" → name it (e.g. <code>feature/new-silver-table</code>)</li>
+        <li><strong>Switch branch</strong> — branch dropdown → select existing branch</li>
+        <li><strong>Commit changes</strong> — Git Folders UI → "Commit &amp; push" → write commit message → confirm</li>
+        <li><strong>Push</strong> — included in the commit step or separately via "Push" button</li>
+        <li><strong>Pull request</strong> — navigate to GitHub/GitLab/ADO link from Git Folders UI → create PR from feature branch to main</li>
+        <li><strong>Pull latest</strong> — Git Folders UI → "Pull" → syncs remote changes to workspace</li>
+        <li>Supports: GitHub, GitLab, Azure DevOps, Bitbucket</li>
+      </ul>
+    </div>
+    <div>
+      <table>
+        <tr><th>Git Folders advantage</th><th>Over plain notebook versioning</th></tr>
+        <tr><td>Full Git branching</td><td>Only linear revision history</td></tr>
+        <tr><td>Pull requests + code review</td><td>No review workflow</td></tr>
+        <tr><td>Multiple environments via branches</td><td>Single workspace only</td></tr>
+        <tr><td>Works with DABs CI/CD</td><td>Not deployable via CLI</td></tr>
+        <tr><td>Sparse checkout for large monorepos</td><td>Not supported</td></tr>
+      </table>
+      <div class="ok"><strong>CI/CD workflow (GitHub Actions):</strong> Developer pushes to feature branch → PR created → tests run → merge to main → GitHub Action triggers <code>databricks bundle deploy --target prod</code> automatically.</div>
+    </div>
+  </div>
+  <div class="cb" style="margin-top:8px"><span class="cm"># GitHub Actions: auto-deploy DAB on push to main</span>
+<span class="cm"># name: Deploy to Production</span>
+<span class="cm"># on: push: branches: [main]</span>
+<span class="cm"># jobs: deploy: steps:</span>
+<span class="cm">#   - uses: actions/checkout@v4</span>
+<span class="cm">#   - uses: databricks/setup-cli@main</span>
+<span class="cm">#   - run: databricks bundle deploy --target prod</span>
+<span class="cm">#     env:</span>
+<span class="cm">#       DATABRICKS_HOST: ${{ secrets.DB_PROD_HOST }}</span>
+<span class="cm">#       DATABRICKS_TOKEN: ${{ secrets.DB_PROD_TOKEN }}</span></div>
+</div>
+
+<div class="card">
+  <h3>Databricks CLI — key commands</h3>
+  <ul class="b">
+    <li><code>databricks bundle validate</code> — check YAML syntax before deploying</li>
+    <li><code>databricks bundle deploy --target dev</code> — deploy to specific environment</li>
+    <li><code>databricks bundle run job_name</code> — trigger a job run from CLI</li>
+    <li><code>databricks bundle destroy</code> — tear down all resources in a target</li>
+    <li><code>databricks jobs list</code> — list all jobs in workspace</li>
+    <li><code>databricks clusters list</code> — list clusters</li>
+    <li><code>databricks fs ls dbfs:/path</code> — browse DBFS from terminal</li>
+    <li><code>databricks secrets list-scopes</code> — list secret scopes</li>
+    <li>Used in automated CI/CD pipelines — no UI interaction needed</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>Environment-specific config with DAB variables</h3>
+  <div class="cb"><span class="cm"># Override variables per target</span>
+variables:
+  cluster_size:
+    default: Standard_D4s_v3    <span class="cm"># dev default</span>
+
+targets:
+  dev:
+    variables:
+      cluster_size: Standard_D4s_v3   <span class="cm"># small dev cluster</span>
+  prod:
+    variables:
+      cluster_size: Standard_D8s_v3   <span class="cm"># larger prod cluster</span>
+
+<span class="cm"># Reference in resources</span>
+<span class="cm"># node_type_id: "${var.cluster_size}"</span>
+
+<span class="cm"># Same codebase; different config per env</span>
+<span class="cm"># No code changes needed when promoting dev → prod</span></div>
+</div>
+
+</div>
+</div>
+
+<!-- ===== S6 ===== -->
+<div id="s6" class="section s6">
+<div class="audio-bar">
+  <button class="play-btn" onclick="togglePlay('s6')" title="Play / Pause"><svg id="icon-s6" viewBox="0 0 16 16"><polygon points="3,1 14,8 3,15"/></svg></button>
+  <div class="audio-info">
+    <div class="audio-title">Section 6 — Troubleshooting, Monitoring, and Optimization (10%)</div>
+    <div class="seek-wrap">
+      <input type="range" class="seek" id="seek-s6" min="0" max="100" value="0" step="0.1" oninput="onSeek('s6',this.value)" style="--pct:0%">
+      <span class="time-label" id="time-s6">0:00 / 0:00</span>
+    </div>
+    <div class="audio-err" id="err-s6">Place <code>audio/section6.mp3</code> next to this file.</div>
+  </div>
+  <audio id="aud-s6" src="audio/section6.mp3" preload="metadata" ontimeupdate="onTick('s6')" onloadedmetadata="onMeta('s6')" onended="onEnd('s6')" onerror="onErr('s6')"></audio>
+</div>
+<div class="grid">
+
+<div class="card full">
+  <h3>Spark UI — interpret stage-level metrics <span class="badge hot">sample Q1</span></h3>
+  <p>Sample Q1 describes a stage where most tasks finish in &lt;30 seconds but one takes 10 minutes, with Max shuffle read at 5GB vs Median at 400MB. The answer is B — enable AQE skew join handling. This is the classic data skew pattern on the Spark UI.</p>
+  <div class="two">
+    <div>
+      <table>
+        <tr><th>Spark UI tab</th><th>What to look for</th><th>Problem signal</th></tr>
+        <tr><td>Jobs</td><td>Duration per job action</td><td>One job dominates total runtime</td></tr>
+        <tr><td>Stages</td><td>Shuffle read/write size, spill to disk</td><td>One stage takes 80%+ of time</td></tr>
+        <tr><td>Tasks</td><td>Duration spread; Min/Median/Max</td><td>Max task 10× longer than Median = data skew</td></tr>
+        <tr><td>SQL / DataFrame</td><td>Physical plan; join type; filter push-down</td><td>SortMergeJoin instead of BroadcastHashJoin; missing PushedFilters</td></tr>
+        <tr><td>Storage</td><td>Cached fraction, memory used</td><td>Cache eviction mid-job</td></tr>
+        <tr><td>Executors</td><td>GC time %, memory used per executor</td><td>GC &gt; 5% = memory pressure → increase executor memory</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="cb"><span class="cm"># AQE — handles skew, partitions, join strategy</span>
+spark.conf.<span class="fn">set</span>(<span class="str">"spark.sql.adaptive.enabled"</span>, <span class="str">"true"</span>)
+spark.conf.<span class="fn">set</span>(<span class="str">"spark.sql.adaptive.skewJoin.enabled"</span>, <span class="str">"true"</span>)
+spark.conf.<span class="fn">set</span>(<span class="str">"spark.sql.adaptive.coalescePartitions.enabled"</span>, <span class="str">"true"</span>)
+
+<span class="cm"># Diagnose query plan</span>
+df.<span class="fn">explain</span>(<span class="str">"formatted"</span>)   <span class="cm"># readable tree format</span>
+df.<span class="fn">explain</span>(<span class="str">"extended"</span>)    <span class="cm"># logical + physical plans</span>
+df.rdd.<span class="fn">getNumPartitions</span>() <span class="cm"># current partition count</span>
+
+<span class="cm"># Manual skew fix: salt the join key</span>
+<span class="kw">from</span> pyspark.sql.functions <span class="kw">import</span> rand, floor
+df_salted = df.<span class="fn">withColumn</span>(<span class="str">"salt"</span>, (floor(rand() * <span class="num">10</span>)).<span class="fn">cast</span>(<span class="str">"string"</span>))
+            .<span class="fn">withColumn</span>(<span class="str">"salted_key"</span>, concat(col(<span class="str">"join_key"</span>),<span class="fn">lit</span>(<span class="str">"_"</span>),col(<span class="str">"salt"</span>)))</div>
+      <div class="warn"><strong>Sample Q1 — correct answer is B:</strong> One task 10× longer with Max shuffle read 5GB vs Median 400MB = data skew. Fix = enable AQE skew join (<code>skewJoin.enabled=true</code>). Adding more executors (A) doesn't fix skew. Reducing shuffle partitions (C) makes it worse. Manual salting (D) works but AQE handles it automatically — B is preferred.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Liquid Clustering and Predictive Optimization <span class="badge new">exam guide explicit</span></h3>
+  <p>Both are named explicitly in the exam guide for Section 6. Liquid Clustering replaces static partitioning and Z-ordering; Predictive Optimization automates maintenance operations.</p>
+  <div class="two">
+    <div>
+      <ul class="b">
+        <li><strong>Liquid Clustering</strong> — replaces static <code>PARTITIONED BY</code> and Z-ordering; dynamically re-clusters data based on actual query patterns; multi-column; incremental — doesn't require full rewrite</li>
+        <li>Enable on new table: <code>CREATE TABLE t CLUSTER BY (col1, col2)</code></li>
+        <li>Enable on existing: <code>ALTER TABLE t CLUSTER BY (col1, col2)</code></li>
+        <li>Still requires <code>OPTIMIZE</code> to actually trigger clustering of new data</li>
+        <li>Best for: high-cardinality columns; frequently changing filter columns; tables that evolve over time</li>
+      </ul>
+      <div class="cb"><span class="cm">-- Enable Liquid Clustering</span>
+<span class="kw">CREATE TABLE</span> events (
+  id <span class="kw">STRING</span>, country <span class="kw">STRING</span>, event_date <span class="kw">DATE</span>
+) <span class="kw">CLUSTER BY</span> (country, event_date);
+
+<span class="cm">-- Change clustering columns</span>
+<span class="kw">ALTER TABLE</span> events <span class="kw">CLUSTER BY</span> (user_id, event_date);
+
+<span class="cm">-- Trigger clustering of new data</span>
+<span class="kw">OPTIMIZE</span> events;</div>
+    </div>
+    <div>
+      <ul class="b">
+        <li><strong>Predictive Optimization</strong> — Databricks automatically runs OPTIMIZE and VACUUM on Unity Catalog managed tables based on usage patterns; no manual scheduling needed</li>
+        <li>Enabled at the UC metastore or catalog level by an admin</li>
+        <li>Analyses table access patterns to determine when OPTIMIZE is beneficial</li>
+        <li>Prevents the small-file problem without manual maintenance jobs</li>
+        <li>Currently supported for UC managed tables only (not external tables)</li>
+      </ul>
+      <table>
+        <tr><th>Technique</th><th>Manual or auto?</th><th>Use when</th></tr>
+        <tr><td>OPTIMIZE + ZORDER</td><td>Manual</td><td>One-off or scheduled; specific column layout needed</td></tr>
+        <tr><td>Liquid Clustering</td><td>Manual trigger (OPTIMIZE); auto layout choice</td><td>Dynamic query patterns; evolving filter columns</td></tr>
+        <tr><td>Predictive Optimization</td><td>Fully automatic</td><td>UC managed tables; reduce ops burden</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Cluster startup failures, library conflicts, and OOM</h3>
+  <p>The exam gives a symptom and asks for the diagnosis. Know the three main failure categories and their signatures.</p>
+  <div class="three">
+    <div>
+      <div style="font-weight:700;font-size:12px;margin-bottom:6px;color:#C62828">Cluster startup failures</div>
+      <ul class="b">
+        <li><strong>Symptoms:</strong> cluster stays in "Pending" or "Error" state; never reaches "Running"</li>
+        <li>Cloud quota exceeded — request more vCPUs in cloud console</li>
+        <li>Init script failure — check driver logs &gt; init script output</li>
+        <li>Wrong instance type for region — change node type</li>
+        <li>Network/VNet misconfiguration — check security group / NSG rules</li>
+        <li>IAM / service principal lacks permissions to spin up VMs</li>
+      </ul>
+    </div>
+    <div>
+      <div style="font-weight:700;font-size:12px;margin-bottom:6px;color:#C62828">Library conflicts</div>
+      <ul class="b">
+        <li><strong>Symptoms:</strong> <code>ImportError</code>, <code>ClassNotFoundException</code>, version mismatch errors in task logs</li>
+        <li>Conflicting versions between cluster-installed and notebook-installed libraries</li>
+        <li><strong>Fix:</strong> use <code>%pip install</code> in notebook (notebook-scoped; takes priority)</li>
+        <li>Pin library versions in cluster config or <code>requirements.txt</code></li>
+        <li>Use cluster policies to enforce standard library sets</li>
+        <li>Check DBR version compatibility for each library</li>
+      </ul>
+    </div>
+    <div>
+      <div style="font-weight:700;font-size:12px;margin-bottom:6px;color:#C62828">Out-of-memory (OOM)</div>
+      <ul class="b">
+        <li><strong>Symptoms:</strong> <code>java.lang.OutOfMemoryError</code>; task killed; executor lost; spill to disk warnings in Spark UI</li>
+        <li><strong>Executor OOM:</strong> increase <code>spark.executor.memory</code>; reduce <code>shuffle.partitions</code>; avoid <code>collect()</code> on large DFs</li>
+        <li><strong>Driver OOM:</strong> increase <code>spark.driver.memory</code>; avoid <code>.collect()</code> / <code>.toPandas()</code> on large datasets</li>
+        <li>Spill to disk → memory pressure; increase executor memory or add nodes</li>
+        <li>GC &gt; 5% in Spark UI Executors tab → memory pressure signal</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Performance bottlenecks — diagnosis table</h3>
+  <table>
+    <tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+    <tr><td>One task 10× slower than others</td><td>Data skew — one partition has most data</td><td>Enable AQE skew join; or salt the join key manually</td></tr>
+    <tr><td>Large shuffle read/write in Stages tab</td><td>Expensive shuffle — too many or too large joins/groupBys</td><td>Broadcast small tables; reduce data before join; AQE partition coalescing</td></tr>
+    <tr><td>Spill to disk in Stages tab</td><td>Not enough executor memory for partition size</td><td>Increase executor memory; increase shuffle partition count; repartition</td></tr>
+    <tr><td>Job runs fine once, slow on repeat</td><td>Cache eviction — cached data was evicted</td><td>Ensure cache fits in memory; use <code>CACHE TABLE</code> or <code>persist()</code></td></tr>
+    <tr><td>SortMergeJoin instead of BroadcastHashJoin</td><td>Small table exceeds broadcast threshold</td><td>Raise <code>autoBroadcastJoinThreshold</code>; or use <code>broadcast()</code> hint explicitly</td></tr>
+    <tr><td>Job much slower after new data source added</td><td>Likely skew in new source (see Q1)</td><td>Check Max/Median shuffle read ratio in Tasks tab; enable AQE skew join</td></tr>
+  </table>
+</div>
+
+</div>
+</div>
+
+<!-- ===== S7 ===== -->
+<div id="s7" class="section s7">
+<div class="audio-bar">
+  <button class="play-btn" onclick="togglePlay('s7')" title="Play / Pause"><svg id="icon-s7" viewBox="0 0 16 16"><polygon points="3,1 14,8 3,15"/></svg></button>
+  <div class="audio-info">
+    <div class="audio-title">Section 7 — Governance and Security (15%)</div>
+    <div class="seek-wrap">
+      <input type="range" class="seek" id="seek-s7" min="0" max="100" value="0" step="0.1" oninput="onSeek('s7',this.value)" style="--pct:0%">
+      <span class="time-label" id="time-s7">0:00 / 0:00</span>
+    </div>
+    <div class="audio-err" id="err-s7">Place <code>audio/section7.mp3</code> next to this file.</div>
+  </div>
+  <audio id="aud-s7" src="audio/section7.mp3" preload="metadata" ontimeupdate="onTick('s7')" onloadedmetadata="onMeta('s7')" onended="onEnd('s7')" onerror="onErr('s7')"></audio>
+</div>
+<div class="grid">
+
+<div class="card full">
+  <h3>Unity Catalog — hierarchy and permissions <span class="badge hot">high frequency</span></h3>
+  <p>Unity Catalog uses a three-level namespace — <code>catalog.schema.table</code>. Users need USE access at every level before object-level privileges apply. This hierarchical requirement is the most tested concept in Section 7.</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm">-- Minimum read access (all three required!)</span>
+<span class="kw">GRANT USE CATALOG ON CATALOG</span> prod <span class="kw">TO</span> analysts;
+<span class="kw">GRANT USE SCHEMA ON SCHEMA</span> prod.sales <span class="kw">TO</span> analysts;
+<span class="kw">GRANT SELECT ON TABLE</span> prod.sales.orders <span class="kw">TO</span> analysts;
+
+<span class="cm">-- Schema-level (covers all current + future objects)</span>
+<span class="kw">GRANT SELECT ON SCHEMA</span> prod.sales <span class="kw">TO</span> analysts;
+<span class="kw">GRANT MODIFY ON TABLE</span> prod.sales.orders <span class="kw">TO</span> `eng`;
+<span class="kw">GRANT CREATE TABLE ON SCHEMA</span> dev.staging <span class="kw">TO</span> `eng`;
+
+<span class="cm">-- Catalog-level</span>
+<span class="kw">GRANT ALL PRIVILEGES ON CATALOG</span> dev <span class="kw">TO</span> `dev-team`;
+<span class="kw">GRANT CREATE SCHEMA ON CATALOG</span> dev <span class="kw">TO</span> `eng`;
+
+<span class="cm">-- DENY: explicitly blocks even if GRANT exists elsewhere</span>
+<span class="kw">DENY SELECT ON TABLE</span> prod.sales.pii_data <span class="kw">TO</span> contractors;
+
+<span class="cm">-- Revoke and inspect</span>
+<span class="kw">REVOKE SELECT ON TABLE</span> t <span class="kw">FROM</span> analysts;
+<span class="kw">SHOW GRANTS ON TABLE</span> prod.sales.orders;
+<span class="kw">SHOW GRANTS TO</span> analysts;
