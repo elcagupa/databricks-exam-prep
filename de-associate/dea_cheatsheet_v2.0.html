@@ -45,7 +45,7 @@ tr:nth-child(even) td{background:#fafafa}
 .t-s{background:#f0f4f8;border:0.5px solid #aac0cc}
 .t-g{background:#eef8f0;border:0.5px solid #9ccfaa}
 .tier-title{font-weight:700;font-size:13px;margin-bottom:6px}
-/* audio*/
+/* audio */
 .audio-bar{display:flex;align-items:center;gap:10px;background:#f5f5f5;border:0.5px solid #e0e0e0;border-radius:10px;padding:10px 14px;margin-bottom:14px}
 .play-btn{flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1.5px solid var(--sc);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
 .play-btn:hover{background:var(--sb)}
@@ -1195,4 +1195,154 @@ df_salted = df.<span class="fn">withColumn</span>(<span class="str">"salt"</span
 <span class="cm">-- Revoke and inspect</span>
 <span class="kw">REVOKE SELECT ON TABLE</span> t <span class="kw">FROM</span> analysts;
 <span class="kw">SHOW GRANTS ON TABLE</span> prod.sales.orders;
-<span class="kw">SHOW GRANTS TO</span> analysts;
+<span class="kw">SHOW GRANTS TO</span> analysts;</div>
+    </div>
+    <div>
+      <table>
+        <tr><th>Privilege</th><th>Allows</th></tr>
+        <tr><td>USE CATALOG</td><td>Navigate into a catalog (required first)</td></tr>
+        <tr><td>USE SCHEMA</td><td>Navigate into a schema (required second)</td></tr>
+        <tr><td>SELECT</td><td>Read data from table or view</td></tr>
+        <tr><td>MODIFY</td><td>INSERT, UPDATE, DELETE on table</td></tr>
+        <tr><td>CREATE TABLE</td><td>Create tables within a schema</td></tr>
+        <tr><td>CREATE VIEW</td><td>Create views within a schema</td></tr>
+        <tr><td>CREATE SCHEMA</td><td>Create schemas within a catalog</td></tr>
+        <tr><td>EXECUTE</td><td>Run a function / UDF</td></tr>
+        <tr><td>ALL PRIVILEGES</td><td>Every privilege on the object</td></tr>
+        <tr><td>DENY</td><td>Explicitly blocks — overrides GRANT</td></tr>
+      </table>
+      <div class="warn"><strong>Exam trap:</strong> Users need USE CATALOG + USE SCHEMA + SELECT on the table — all three. Missing any one means access denied even if SELECT is granted. DENY overrides GRANT — if a user is in a group that has GRANT but is individually DENYed, they are denied.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Managed vs external tables <span class="badge hot">high frequency</span></h3>
+  <p>A recurring exam scenario: "A team wants to remove a table from Unity Catalog without losing the underlying data files." The answer is always an external table.</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm">-- Managed: UC controls data + metadata</span>
+<span class="kw">CREATE TABLE</span> prod.sales.orders (
+  order_id <span class="kw">STRING</span>, amount <span class="kw">DOUBLE</span>
+) <span class="kw">USING DELTA</span>;
+<span class="cm">-- DROP TABLE = deletes data files + metadata</span>
+
+<span class="cm">-- External: you control storage location</span>
+<span class="kw">CREATE TABLE</span> prod.sales.orders_ext (
+  order_id <span class="kw">STRING</span>, amount <span class="kw">DOUBLE</span>
+) <span class="kw">USING DELTA</span>
+<span class="kw">LOCATION</span> <span class="str">'abfss://container@storage.dfs.core.windows.net/orders'</span>;
+<span class="cm">-- DROP TABLE = removes UC entry only; data stays</span>
+
+<span class="cm">-- Convert external → managed</span>
+<span class="kw">CREATE TABLE</span> prod.sales.orders_managed
+<span class="kw">AS SELECT</span> * <span class="kw">FROM</span> prod.sales.orders_ext;
+
+<span class="cm">-- Check type (look at "type" column)</span>
+<span class="kw">DESCRIBE DETAIL</span> prod.sales.orders;
+
+<span class="cm">-- Storage credential + external location (prerequisite)</span>
+<span class="kw">CREATE STORAGE CREDENTIAL</span> my_cred
+  <span class="kw">WITH AZURE MANAGED IDENTITY</span> APPLICATION_ID <span class="str">'xxx'</span>;
+<span class="kw">CREATE EXTERNAL LOCATION</span> my_loc
+  <span class="kw">URL</span> <span class="str">'abfss://container@storage.dfs.core.windows.net/'</span>
+  <span class="kw">WITH</span> (STORAGE CREDENTIAL my_cred);</div>
+    </div>
+    <div>
+      <table>
+        <tr><th>Scenario</th><th>Use managed or external?</th></tr>
+        <tr><td>UC owns full lifecycle</td><td>Managed</td></tr>
+        <tr><td>Data pre-exists in cloud storage</td><td>External</td></tr>
+        <tr><td>Shared with non-Databricks tools</td><td>External</td></tr>
+        <tr><td>Drop table but keep data files</td><td>External</td></tr>
+        <tr><td>Simplest setup, no LOCATION config</td><td>Managed</td></tr>
+        <tr><td>Your team controls data retention</td><td>External</td></tr>
+      </table>
+      <div class="warn"><strong>Exam trap:</strong> Dropping a managed table permanently deletes the Parquet files. There is no recovery. If you need to unregister a table but keep data — it must be an external table. This is the most common scenario tested.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card full">
+  <h3>Column masking and row-level security <span class="badge new">new in May 2026 guide</span></h3>
+  <p>The May 2026 exam guide explicitly adds column-level masking and row-level security as testable topics. These restrict what data different user groups can see.</p>
+  <div class="two">
+    <div>
+      <div class="cb"><span class="cm">-- Row-level security via dynamic view</span>
+<span class="cm">-- Analysts only see their own region's data</span>
+<span class="kw">CREATE OR REPLACE VIEW</span> prod.sales.orders_rls <span class="kw">AS</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> prod.sales.orders
+<span class="kw">WHERE</span> region = <span class="fn">current_user</span>()       <span class="cm">-- filter by logged-in user</span>
+   <span class="kw">OR</span> <span class="kw">IS_MEMBER</span>(<span class="str">'data-admins'</span>);    <span class="cm">-- admins see everything</span>
+
+<span class="cm">-- Grant analysts access to the VIEW (not base table)</span>
+<span class="kw">GRANT SELECT ON VIEW</span> prod.sales.orders_rls <span class="kw">TO</span> analysts;
+<span class="kw">REVOKE SELECT ON TABLE</span> prod.sales.orders <span class="kw">FROM</span> analysts;</div>
+    </div>
+    <div>
+      <div class="cb"><span class="cm">-- Column masking via a masking function</span>
+<span class="cm">-- Mask email column for non-admin users</span>
+<span class="kw">CREATE OR REPLACE FUNCTION</span> prod.utils.<span class="fn">mask_email</span>(email <span class="kw">STRING</span>)
+<span class="kw">RETURNS STRING</span>
+<span class="kw">RETURN</span> <span class="kw">CASE</span>
+  <span class="kw">WHEN</span> <span class="kw">IS_MEMBER</span>(<span class="str">'data-admins'</span>) <span class="kw">THEN</span> email
+  <span class="kw">ELSE</span> <span class="fn">CONCAT</span>(<span class="fn">LEFT</span>(email,<span class="num">2</span>),<span class="str">'***@***'</span>)
+<span class="kw">END</span>;
+
+<span class="cm">-- Apply masking policy to column (Unity Catalog)</span>
+<span class="kw">ALTER TABLE</span> prod.sales.customers
+  <span class="kw">ALTER COLUMN</span> email
+  <span class="kw">SET MASK</span> prod.utils.<span class="fn">mask_email</span>;
+
+<span class="cm">-- ABAC (Attribute-Based Access Control)</span>
+<span class="cm">-- UC row filters and column masks centrally managed</span>
+<span class="cm">-- via policies — apply to all queries on the table</span>
+<span class="cm">-- without requiring view wrappers</span></div>
+    </div>
+  </div>
+  <div class="info"><strong>RLS vs column masking vs ABAC:</strong> Row-level security (via dynamic views) restricts which <em>rows</em> a user sees. Column masking restricts which <em>values</em> in a column are visible — masking PII like emails or SSNs. ABAC (Attribute-Based Access Control) policies in Unity Catalog apply both centrally at the table level — no view wrapper needed — using user attributes and group memberships as conditions.</div>
+</div>
+
+<div class="card full">
+  <h3>Unity Catalog ABAC policies</h3>
+  <p>ABAC (Attribute-Based Access Control) is the modern UC approach to centralised row filtering and column masking. Policies apply to all queries on a table without requiring users to query through a view.</p>
+  <div class="two">
+    <div>
+      <ul class="b">
+        <li>Policies are defined as SQL functions attached to tables</li>
+        <li>Row filter policy — filters rows based on caller's identity/group memberships</li>
+        <li>Column mask policy — replaces sensitive column values based on caller's identity</li>
+        <li>Applied automatically to ALL queries on the table — users cannot bypass by querying the base table directly</li>
+        <li>Managed centrally by data stewards / admins — not by individual view owners</li>
+        <li>Survives table renames and schema changes (attached to table, not to a view)</li>
+      </ul>
+    </div>
+    <div>
+      <table>
+        <tr><th>Approach</th><th>Row filtering</th><th>Column masking</th><th>Bypass risk</th></tr>
+        <tr><td>Dynamic view</td><td>Yes</td><td>Yes (via CASE)</td><td>Yes — if user gets base table access</td></tr>
+        <tr><td>UC ABAC policy</td><td>Yes</td><td>Yes</td><td>No — enforced at engine level</td></tr>
+      </table>
+      <div class="ok"><strong>When to use ABAC vs views:</strong> Use ABAC policies when you need guaranteed enforcement across all query paths (notebooks, SQL editor, BI tools, APIs). Use views when ABAC isn't available or when you need more complex logic that spans multiple tables.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+const SECS=['s1','s2','s3','s4','s5','s6','s7'];
+function fmt(s){if(isNaN(s)||s<0)s=0;const m=Math.floor(s/60),sc=Math.floor(s%60);return m+':'+(sc<10?'0':'')+sc;}
+function setProgress(id,pct){const sk=document.getElementById('seek-'+id);if(!sk)return;sk.value=pct;sk.style.setProperty('--pct',pct+'%');}
+function onTick(id){const a=document.getElementById('aud-'+id);if(!a||!a.duration||isNaN(a.duration))return;const p=(a.currentTime/a.duration)*100;setProgress(id,p);const tl=document.getElementById('time-'+id);if(tl)tl.textContent=fmt(a.currentTime)+' / '+fmt(a.duration);}
+function onMeta(id){const a=document.getElementById('aud-'+id);const tl=document.getElementById('time-'+id);if(a&&tl)tl.textContent='0:00 / '+fmt(a.duration);}
+function onEnd(id){setProgress(id,0);setPauseIcon(id,false);const a=document.getElementById('aud-'+id);if(a)a.currentTime=0;}
+function onErr(id){const e=document.getElementById('err-'+id);if(e)e.style.display='block';}
+function onSeek(id,val){const a=document.getElementById('aud-'+id);if(a&&a.duration&&!isNaN(a.duration))a.currentTime=(val/100)*a.duration;const sk=document.getElementById('seek-'+id);if(sk)sk.style.setProperty('--pct',val+'%');}
+function setPauseIcon(id,playing){const svg=document.getElementById('icon-'+id);if(!svg)return;svg.innerHTML=playing?'<rect x="2" y="1" width="4" height="14"/><rect x="10" y="1" width="4" height="14"/>':'<polygon points="3,1 14,8 3,15"/>';}
+function togglePlay(id){const a=document.getElementById('aud-'+id);if(!a)return;SECS.forEach(s=>{if(s!==id){const o=document.getElementById('aud-'+s);if(o&&!o.paused){o.pause();setPauseIcon(s,false);}}});if(a.paused){a.play().then(()=>setPauseIcon(id,true)).catch(()=>{const e=document.getElementById('err-'+id);if(e)e.style.display='block';});}else{a.pause();setPauseIcon(id,false);}}
+function show(id,btn){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');btn.classList.add('active');}
+</script>
+</body>
+</html>
